@@ -64,6 +64,20 @@ const state = {
             price: 2199,
             category: "Living Room",
             image: "images/minimalist-sofa.jpg"
+        },
+        {
+            id: 10,
+            name: "Modern Two-Tone Sofa",
+            price: 2599,
+            category: "Living Room",
+            image: "images/modern-grey-sofa.jpg"
+        },
+        {
+            id: 11,
+            name: "Curved Luxury Sofa",
+            price: 3499,
+            category: "Living Room",
+            image: "images/curved-luxury-sofa.jpg"
         }
     ]
 };
