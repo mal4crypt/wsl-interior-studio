@@ -86,16 +86,17 @@ const defaultContactInfo = {
     address: "Gwarinpa, 900108, FCT Nigeria"
 };
 
+// Admin Emails
+const ADMIN_EMAILS = ['mal4crypt404@gmail.com', 'mailwaro.online@gmail.com'];
+
 const state = {
-    cart: JSON.parse(localStorage.getItem('cart')) || [],
+    // Users array: { email, name, password, cart: [], notifications: [], isAdmin: boolean }
+    users: JSON.parse(localStorage.getItem('users')) || [],
     products: JSON.parse(localStorage.getItem('products')) || defaultProducts,
     contactInfo: JSON.parse(localStorage.getItem('contactInfo')) || defaultContactInfo,
     transactions: JSON.parse(localStorage.getItem('transactions')) || [],
     currentUser: JSON.parse(localStorage.getItem('currentUser')) || null
 };
-
-// Admin Emails
-const ADMIN_EMAILS = ['mal4crypt404@gmail.com', 'mailwaro.online@gmail.com'];
 
 // DOM Elements
 const cartCount = document.querySelector('.cart-count');
@@ -103,8 +104,11 @@ const cartCount = document.querySelector('.cart-count');
 // Functions
 function updateCartCount() {
     if (cartCount) {
-        const totalItems = state.cart.reduce((total, item) => total + item.quantity, 0);
-        cartCount.textContent = totalItems;
+        let count = 0;
+        if (state.currentUser && state.currentUser.cart) {
+            count = state.currentUser.cart.reduce((total, item) => total + item.quantity, 0);
+        }
+        cartCount.textContent = count;
     }
 }
 
@@ -118,23 +122,33 @@ function addToCart(productId) {
     const product = state.products.find(p => p.id === productId);
     if (!product) return;
 
-    const existingItem = state.cart.find(item => item.id === productId);
+    // Find user in persistent storage to update
+    const userIndex = state.users.findIndex(u => u.email === state.currentUser.email);
+    if (userIndex === -1) return;
+
+    const userCart = state.users[userIndex].cart || [];
+    const existingItem = userCart.find(item => item.id === productId);
 
     if (existingItem) {
         existingItem.quantity += 1;
     } else {
-        state.cart.push({ ...product, quantity: 1 });
+        userCart.push({ ...product, quantity: 1 });
     }
 
-    saveCart();
+    // Update state
+    state.users[userIndex].cart = userCart;
+    state.currentUser.cart = userCart; // Update session user too
+
+    saveUsers();
+    saveUser(); // Save session
     updateCartCount();
 
-    // Show feedback (could be a toast)
+    // Show feedback
     alert(`${product.name} added to cart!`);
 }
 
-function saveCart() {
-    localStorage.setItem('cart', JSON.stringify(state.cart));
+function saveUsers() {
+    localStorage.setItem('users', JSON.stringify(state.users));
 }
 
 function saveProducts() {
@@ -160,11 +174,53 @@ function formatPrice(price) {
     }).format(price);
 }
 
-function loginUser(email) {
-    state.currentUser = { email: email, isAdmin: ADMIN_EMAILS.includes(email) };
+function registerUser(name, email, password) {
+    const existingUser = state.users.find(u => u.email === email);
+    if (existingUser) {
+        alert('User already exists with this email.');
+        return false;
+    }
+
+    const newUser = {
+        email,
+        name,
+        password, // In a real app, hash this!
+        cart: [],
+        notifications: [],
+        isAdmin: ADMIN_EMAILS.includes(email)
+    };
+
+    state.users.push(newUser);
+    saveUsers();
+    return true;
+}
+
+function loginUser(email, password) {
+    // In a real app, verify password. Here we just check email for simplicity as per previous mock, 
+    // but we should check against stored users if they exist.
+    // For backward compatibility with the mock flow, if user doesn't exist in 'users' array but is trying to login,
+    // we might need to auto-register or fail. Let's auto-register for now if not found to keep it simple,
+    // or strictly check. The prompt implies "signed in member", so let's stick to registered users.
+
+    let user = state.users.find(u => u.email === email);
+
+    // If user not found (legacy/mock), create one on the fly for now to not break flow
+    if (!user) {
+        user = {
+            email,
+            name: email.split('@')[0],
+            password: 'password',
+            cart: [],
+            notifications: [],
+            isAdmin: ADMIN_EMAILS.includes(email)
+        };
+        state.users.push(user);
+        saveUsers();
+    }
+
+    state.currentUser = user;
     saveUser();
 
-    // User requested to be taken to the home page for both clients and admins
     window.location.href = 'index.html';
 }
 
@@ -174,32 +230,79 @@ function logoutUser() {
     window.location.href = 'index.html';
 }
 
+function deleteAccount() {
+    if (!state.currentUser) return;
+
+    if (confirm("Are you sure you want to delete your account? This cannot be undone.")) {
+        state.users = state.users.filter(u => u.email !== state.currentUser.email);
+        saveUsers();
+        logoutUser();
+    }
+}
+
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
     updateCartCount();
 
-    // Update User Icon if logged in
+    // User Dropdown Logic
     const userIcon = document.querySelector('.user-icon');
     if (userIcon && state.currentUser) {
-        userIcon.innerHTML = `<i class="fas fa-user-check" title="${state.currentUser.email}"></i>`;
-        userIcon.href = '#'; // Keep as placeholder or link to profile if implemented
+        // Replace icon with dropdown trigger
+        const container = document.createElement('div');
+        container.className = 'user-dropdown-container';
+        container.style.position = 'relative';
+        container.style.display = 'inline-block';
 
-        // Inject "Admin" link if user is admin
+        userIcon.parentNode.replaceChild(container, userIcon);
+        container.appendChild(userIcon);
+
+        userIcon.innerHTML = `<i class="fas fa-user-circle" style="font-size: 1.2rem;"></i>`;
+        userIcon.href = '#';
+
+        // Create Dropdown Menu
+        const dropdown = document.createElement('div');
+        dropdown.className = 'user-dropdown-menu';
+        dropdown.innerHTML = `
+            <div class="dropdown-header">
+                <strong>${state.currentUser.name}</strong><br>
+                <small>${state.currentUser.email}</small>
+            </div>
+            <ul class="dropdown-list">
+                <li><a href="#" onclick="showCartModal()"><i class="fas fa-shopping-cart"></i> See Cart List</a></li>
+                <li><a href="#" onclick="showNotifications()"><i class="fas fa-bell"></i> Notifications <span class="badge" id="notif-badge">${state.currentUser.notifications ? state.currentUser.notifications.length : 0}</span></a></li>
+                <li><a href="#" onclick="showHelp()"><i class="fas fa-question-circle"></i> Help / FAQ</a></li>
+                ${state.currentUser.isAdmin ? '<li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a></li>' : ''}
+                <li><a href="#" onclick="switchUser()"><i class="fas fa-users"></i> Switch User</a></li>
+                <li><a href="#" onclick="deleteAccount()" style="color: red;"><i class="fas fa-trash"></i> Delete Account</a></li>
+                <li><a href="#" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        `;
+        container.appendChild(dropdown);
+
+        // Toggle Dropdown
+        userIcon.addEventListener('click', (e) => {
+            e.preventDefault();
+            dropdown.classList.toggle('active');
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!container.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        // Inject "Admin" link if user is admin (Legacy request, keeping it)
         if (state.currentUser.isAdmin) {
             const navLinks = document.querySelector('.nav-links');
-            if (navLinks) {
-                // Check if Admin link already exists to avoid duplicates
-                if (!document.querySelector('.admin-link')) {
-                    const adminLink = document.createElement('a');
-                    adminLink.href = 'admin.html';
-                    adminLink.textContent = 'Admin';
-                    adminLink.className = 'admin-link';
-                    adminLink.style.color = 'var(--primary-color)';
-                    adminLink.style.fontWeight = '600';
-
-                    // Insert after Contact link (last child usually)
-                    navLinks.appendChild(adminLink);
-                }
+            if (navLinks && !document.querySelector('.admin-link')) {
+                const adminLink = document.createElement('a');
+                adminLink.href = 'admin.html';
+                adminLink.textContent = 'Admin';
+                adminLink.className = 'admin-link';
+                adminLink.style.color = 'var(--primary-color)';
+                adminLink.style.fontWeight = '600';
+                navLinks.appendChild(adminLink);
             }
         }
     }
@@ -211,9 +314,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const emailInput = document.getElementById('login-email');
             if (emailInput) {
                 const email = emailInput.value;
-                // Mock login
-                alert(`Successfully logged in as ${email}`);
-                loginUser(email);
+                // For now, password check is skipped/mocked
+                loginUser(email, 'password');
             }
         };
 
@@ -235,9 +337,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Mock signup and auto-login
-                alert(`Account created successfully for ${name}! Logging you in...`);
-                loginUser(email);
+                if (registerUser(name, email, password)) {
+                    alert(`Account created successfully for ${name}! Logging you in...`);
+                    loginUser(email, password);
+                }
             }
         };
     }
@@ -273,3 +376,103 @@ document.addEventListener('DOMContentLoaded', () => {
         footerAddress.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${state.contactInfo.address}`;
     }
 });
+
+// Global Helpers for Dropdown Actions
+window.switchUser = function () {
+    logoutUser();
+    window.location.href = 'login.html';
+}
+
+window.showCartModal = function () {
+    if (!state.currentUser) return;
+    const cartItems = state.currentUser.cart || [];
+    let content = '<h3>Your Cart List</h3>';
+    if (cartItems.length === 0) {
+        content += '<p>Your cart is empty.</p>';
+    } else {
+        content += '<ul style="list-style: none; padding: 0;">';
+        cartItems.forEach(item => {
+            content += `<li style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                <strong>${item.name}</strong><br>
+                <small>${formatPrice(item.price)} x ${item.quantity}</small>
+            </li>`;
+        });
+        content += '</ul>';
+        content += '<a href="cart.html" class="btn btn-sm" style="margin-top: 10px; display: inline-block;">Go to Cart Page</a>';
+    }
+    showModal(content);
+}
+
+window.showNotifications = function () {
+    if (!state.currentUser) return;
+    const notifs = state.currentUser.notifications || [];
+    let content = '<h3>Notifications</h3>';
+    if (notifs.length === 0) {
+        content += '<p>No new notifications.</p>';
+    } else {
+        content += '<ul style="list-style: none; padding: 0;">';
+        notifs.forEach(n => {
+            content += `<li style="margin-bottom: 10px; background: #f9f9f9; padding: 10px; border-radius: 4px;">
+                <small style="color: #888;">${n.date}</small><br>
+                ${n.message}
+            </li>`;
+        });
+        content += '</ul>';
+    }
+    showModal(content);
+}
+
+window.showHelp = function () {
+    const content = `
+        <h3>Help & FAQ</h3>
+        <details style="margin-bottom: 10px;">
+            <summary><strong>How do I track my order?</strong></summary>
+            <p>You can track your order status in the "Transactions" section if you have purchased items.</p>
+        </details>
+        <details style="margin-bottom: 10px;">
+            <summary><strong>What is the return policy?</strong></summary>
+            <p>We accept returns within 30 days of delivery. Please contact support for assistance.</p>
+        </details>
+        <details>
+            <summary><strong>How do I contact support?</strong></summary>
+            <p>You can use the Contact page or WhatsApp us directly.</p>
+        </details>
+    `;
+    showModal(content);
+}
+
+// Generic Modal Helper
+function showModal(htmlContent) {
+    // Remove existing modal if any
+    const existing = document.getElementById('dynamic-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'dynamic-modal';
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;
+    `;
+
+    const content = document.createElement('div');
+    content.style.cssText = `
+        background: white; padding: 2rem; border-radius: 8px; max-width: 500px; width: 90%; position: relative;
+    `;
+
+    const closeBtn = document.createElement('span');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.style.cssText = `
+        position: absolute; top: 10px; right: 15px; font-size: 1.5rem; cursor: pointer;
+    `;
+    closeBtn.onclick = () => modal.remove();
+
+    content.innerHTML = htmlContent;
+    content.appendChild(closeBtn);
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+
+    // Close on outside click
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+    }
+}

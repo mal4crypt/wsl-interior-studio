@@ -154,6 +154,7 @@
                 </li>
                 <li><a href="#" onclick="switchTab('transactions')"><i class="fas fa-file-invoice-dollar"></i>
                         Transactions</a></li>
+                <li><a href="#" onclick="switchTab('clients')"><i class="fas fa-users"></i> Clients</a></li>
                 <li><a href="#" onclick="switchTab('contact')"><i class="fas fa-address-card"></i> Contact Info</a></li>
                 <li style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
                     <a href="index.html"><i class="fas fa-home"></i> Back to Home</a>
@@ -246,6 +247,43 @@
                 </div>
             </div>
 
+            <!-- Clients Tab -->
+            <div id="clients-tab" class="tab-content">
+                <div class="card">
+                    <h3>Registered Clients</h3>
+                    <table id="clients-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Cart Items</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Clients injected here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h3>Send Notification</h3>
+                    <form onsubmit="handleSendNotification(event)">
+                        <div class="form-group">
+                            <label>Select Client</label>
+                            <select id="notif-client-select" required>
+                                <option value="">-- Select Client --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Message</label>
+                            <textarea id="notif-message" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn">Send Notification</button>
+                    </form>
+                </div>
+            </div>
+
             <!-- Contact Info Tab -->
             <div id="contact-tab" class="tab-content">
                 <div class="card">
@@ -298,6 +336,16 @@
         </div>
     </div>
 
+    <!-- View Cart Modal -->
+    <div id="view-cart-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal"
+                onclick="document.getElementById('view-cart-modal').style.display='none'">&times;</span>
+            <h2>Client Cart</h2>
+            <div id="client-cart-content"></div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
     <script>
         // Check Auth
@@ -312,6 +360,7 @@
 
             renderProductsTable();
             renderTransactionsTable();
+            renderClientsTable();
             loadContactInfo();
         });
 
@@ -329,6 +378,7 @@
             const titles = {
                 'products': 'Product Management',
                 'transactions': 'Transaction Records',
+                'clients': 'Client Management',
                 'contact': 'Contact Information'
             };
             document.getElementById('page-title').textContent = titles[tabName];
@@ -427,6 +477,95 @@
             });
         }
 
+        // Clients Logic
+        function renderClientsTable() {
+            const tbody = document.querySelector('#clients-table tbody');
+            const select = document.getElementById('notif-client-select');
+            tbody.innerHTML = '';
+            select.innerHTML = '<option value="">-- Select Client --</option>';
+
+            // Filter only non-admin users
+            const clients = state.users.filter(u => !u.isAdmin);
+
+            if (clients.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4">No clients registered yet.</td></tr>';
+                return;
+            }
+
+            clients.forEach(client => {
+                // Populate Table
+                const tr = document.createElement('tr');
+                const cartCount = client.cart ? client.cart.length : 0;
+                tr.innerHTML = `
+                    <td>${client.name}</td>
+                    <td>${client.email}</td>
+                    <td>${cartCount} items <a href="#" onclick="viewClientCart('${client.email}')" style="font-size: 0.8rem; margin-left: 5px;">(View)</a></td>
+                    <td>
+                        <button class="btn-sm btn" onclick="prepareNotification('${client.email}')">Notify</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                // Populate Select
+                const option = document.createElement('option');
+                option.value = client.email;
+                option.textContent = `${client.name} (${client.email})`;
+                select.appendChild(option);
+            });
+        }
+
+        function viewClientCart(email) {
+            const client = state.users.find(u => u.email === email);
+            if (!client) return;
+
+            const container = document.getElementById('client-cart-content');
+            if (!client.cart || client.cart.length === 0) {
+                container.innerHTML = '<p>Cart is empty.</p>';
+            } else {
+                let html = '<ul style="list-style: none; padding: 0;">';
+                client.cart.forEach(item => {
+                    html += `<li style="border-bottom: 1px solid #eee; padding: 10px 0;">
+                        <strong>${item.name}</strong> - ${formatPrice(item.price)} x ${item.quantity}
+                    </li>`;
+                });
+                html += '</ul>';
+                container.innerHTML = html;
+            }
+
+            document.getElementById('view-cart-modal').style.display = 'flex';
+        }
+
+        function prepareNotification(email) {
+            document.getElementById('notif-client-select').value = email;
+            document.getElementById('notif-message').focus();
+        }
+
+        function handleSendNotification(e) {
+            e.preventDefault();
+            const email = document.getElementById('notif-client-select').value;
+            const message = document.getElementById('notif-message').value;
+
+            if (!email || !message) return;
+
+            const userIndex = state.users.findIndex(u => u.email === email);
+            if (userIndex !== -1) {
+                if (!state.users[userIndex].notifications) {
+                    state.users[userIndex].notifications = [];
+                }
+
+                state.users[userIndex].notifications.unshift({
+                    id: Date.now(),
+                    date: new Date().toLocaleDateString(),
+                    message: message,
+                    read: false
+                });
+
+                saveUsers();
+                alert('Notification sent successfully!');
+                e.target.reset();
+            }
+        }
+
         // Contact Info Logic
         function loadContactInfo() {
             document.getElementById('contact-email').value = state.contactInfo.email;
@@ -450,8 +589,12 @@
         // Close modal when clicking outside
         window.onclick = function (event) {
             const modal = document.getElementById('edit-product-modal');
+            const cartModal = document.getElementById('view-cart-modal');
             if (event.target == modal) {
                 modal.style.display = 'none';
+            }
+            if (event.target == cartModal) {
+                cartModal.style.display = 'none';
             }
         }
     </script>
