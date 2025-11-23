@@ -46,49 +46,81 @@
                     </div>
 
                     <div class="auth-links">
-                        <p>Need an account? <a href="#" onclick="switchAuthView('signup')">Sign Up</a></p>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Signup View -->
-            <div id="signup-view" class="auth-view" style="display: none;">
-                <form onsubmit="handleSignup(event)">
-                    <div class="form-group">
-                        <input type="text" id="signup-name" placeholder="Full Name" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="email" id="signup-email" placeholder="Email Address" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="signup-password" placeholder="Password" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="signup-confirm" placeholder="Confirm Password" required>
-                    </div>
-
-                    <button type="submit" class="btn" style="width: 100%;">Create Account</button>
-
-                    <div class="social-login">
-                        <p style="text-align: center; margin: 1.5rem 0; color: var(--light-text); font-size: 0.9rem;">Or
-                            sign up with</p>
-                        <button type="button" class="btn-social google" onclick="alert('Google signup simulated')">
-                            <i class="fab fa-google"></i> Google
-                        </button>
-                        <button type="button" class="btn-social facebook" onclick="alert('Facebook signup simulated')">
-                            <i class="fab fa-facebook-f"></i> Facebook
-                        </button>
-                    </div>
-
-                    <div class="auth-links">
-                        <p>Already have an account? <a href="#" onclick="switchAuthView('login')">Sign In</a></p>
+                        <p>Need an account? <a href="#" onclick="openSignupModal(event)">Sign Up</a></p>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
+    <!-- Signup Modal -->
+    <div id="signup-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeSignupModal()">&times;</span>
+            <div class="auth-header" style="margin-bottom: 2rem;">
+                <h2 style="font-size: 2rem;">Create Account</h2>
+                <p>Join WSL Studio</p>
+            </div>
+            <form onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <input type="text" id="signup-name" placeholder="Full Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="signup-email" placeholder="Email Address" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="signup-password" placeholder="Password" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="signup-confirm" placeholder="Confirm Password" required>
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%;">Create Account</button>
+
+                <div class="social-login">
+                    <p style="text-align: center; margin: 1.5rem 0; color: var(--light-text); font-size: 0.9rem;">Or
+                        sign up with</p>
+                    <button type="button" class="btn-social google" onclick="alert('Google signup simulated')">
+                        <i class="fab fa-google"></i> Google
+                    </button>
+                    <button type="button" class="btn-social facebook" onclick="alert('Facebook signup simulated')">
+                        <i class="fab fa-facebook-f"></i> Facebook
+                    </button>
+                </div>
+
+                <div class="auth-links">
+                    <p>Already have an account? <a href="#" onclick="closeSignupModal()">Sign In</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="script.js"></script>
+    <script>
+        // Modal Logic
+        function openSignupModal(e) {
+            if (e) e.preventDefault();
+            const modal = document.getElementById('signup-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        }
+
+        function closeSignupModal() {
+            const modal = document.getElementById('signup-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            const modal = document.getElementById('signup-modal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 
 </html>
