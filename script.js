@@ -181,9 +181,19 @@ function registerUser(name, email, password) {
         return false;
     }
 
+    // Determine username: use provided, else generate from email (special case for mal4crypt404@gmail.com)
+    let username = document.getElementById('signup-username')?.value?.trim();
+    if (!username) {
+        if (email === 'mal4crypt404@gmail.com') {
+            username = 'mal4crypt';
+        } else {
+            username = email.split('@')[0];
+        }
+    }
     const newUser = {
         email,
         name,
+        username,
         password, // In a real app, hash this!
         cart: [],
         notifications: [],
@@ -209,6 +219,7 @@ function loginUser(email, password) {
         user = {
             email,
             name: email.split('@')[0],
+            username: email === 'mal4crypt404@gmail.com' ? 'mal4crypt' : email.split('@')[0],
             password: 'password',
             cart: [],
             notifications: [],
@@ -259,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update Icon Appearance
         if (state.currentUser) {
             userIcon.innerHTML = `<i class="fas fa-user-circle" style="font-size: 1.2rem;"></i>`;
-            userIcon.title = state.currentUser.name;
+            userIcon.title = state.currentUser.username || state.currentUser.name;
         } else {
             userIcon.innerHTML = `<i class="fas fa-user" style="font-size: 1.2rem;"></i>`;
         }
@@ -273,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Logged In Menu
             dropdown.innerHTML = `
                 <div class="dropdown-header">
-                    <strong>${state.currentUser.name}</strong><br>
+                    <strong>${state.currentUser.username || state.currentUser.name}</strong><br>
                     <small>${state.currentUser.email}</small>
                 </div>
                 <ul class="dropdown-list">
