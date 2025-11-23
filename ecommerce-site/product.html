@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details | WSL Interior Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">WSL STUDIO</a>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html" class="active">Shop</a>
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                </div>
+                <div class="nav-icons">
+                    <a href="#"><i class="fas fa-search"></i></a>
+                    <a href="cart.html" class="cart-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                    <div class="mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Product Detail Section -->
+    <section style="padding: 5rem 0;">
+        <div class="container">
+            <div class="product-detail-grid"
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;">
+                <!-- Product Image -->
+                <div style="background: white; padding: 1rem; border-radius: 8px; box-shadow: var(--shadow);">
+                    <img id="p-image" src="" alt="Product Image" style="width: 100%; border-radius: 4px;">
+                </div>
+
+                <!-- Product Info -->
+                <div>
+                    <span id="p-category"
+                        style="text-transform: uppercase; letter-spacing: 2px; color: var(--light-text); font-size: 0.9rem;">Category</span>
+                    <h1 id="p-name" style="font-size: 3rem; margin: 1rem 0;">Product Name</h1>
+                    <p id="p-price"
+                        style="font-size: 2rem; color: var(--accent-color); font-weight: bold; margin-bottom: 2rem;">
+                        $0.00</p>
+
+                    <p style="margin-bottom: 2rem; color: var(--light-text);">
+                        Experience premium quality and timeless design with this exquisite piece.
+                        Perfectly crafted to enhance your living space with elegance and functionality.
+                    </p>
+
+                    <div style="margin-bottom: 2rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Quantity</label>
+                        <div style="display: inline-flex; border: 1px solid #ddd; border-radius: 4px;">
+                            <button
+                                style="padding: 0.5rem 1rem; border: none; background: transparent; cursor: pointer;">-</button>
+                            <input type="number" value="1"
+                                style="width: 50px; text-align: center; border: none; -moz-appearance: textfield;">
+                            <button
+                                style="padding: 0.5rem 1rem; border: none; background: transparent; cursor: pointer;">+</button>
+                        </div>
+                    </div>
+
+                    <button id="add-btn" class="btn" style="padding: 1rem 3rem;">Add to Cart</button>
+
+                    <div style="margin-top: 3rem; border-top: 1px solid #eee; padding-top: 2rem;">
+                        <div style="display: flex; gap: 2rem; color: var(--light-text); font-size: 0.9rem;">
+                            <span><i class="fas fa-truck"></i> Free Shipping</span>
+                            <span><i class="fas fa-undo"></i> 30-Day Returns</span>
+                            <span><i class="fas fa-shield-alt"></i> 2-Year Warranty</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>WSL STUDIO</h4>
+                    <p>Premium interior design solutions for the modern lifestyle.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="shop.html">Shop</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> mailwaro.online@gmail.com</li>
+                        <li><i class="fas fa-phone"></i> +234 901 088 3999</li>
+                        <li><i class="fab fa-whatsapp"></i> +234 901 088 3999</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Gwarinpa, 900108, FCT Nigeria</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 WSL Interior Studio. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = parseInt(urlParams.get('id'));
+
+            const product = state.products.find(p => p.id === id);
+
+            if (product) {
+                document.title = `${product.name} | WSL Interior Studio`;
+                document.getElementById('p-image').src = product.image;
+                document.getElementById('p-category').textContent = product.category;
+                document.getElementById('p-name').textContent = product.name;
+                document.getElementById('p-price').textContent = formatPrice(product.price);
+
+                document.getElementById('add-btn').onclick = () => addToCart(product.id);
+            } else {
+                document.querySelector('section').innerHTML = '<div class="container"><h2>Product not found</h2><a href="shop.html" class="btn">Return to Shop</a></div>';
+            }
+        });
+    </script>
+</body>
+
+</html>

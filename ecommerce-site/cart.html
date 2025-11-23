@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart | WSL Interior Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">WSL STUDIO</a>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                </div>
+                <div class="nav-icons">
+                    <a href="#"><i class="fas fa-search"></i></a>
+                    <a href="cart.html" class="cart-icon active">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                    <div class="mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Cart Section -->
+    <section style="padding: 4rem 0; min-height: 60vh;">
+        <div class="container">
+            <h1 style="margin-bottom: 2rem;">Your Shopping Cart</h1>
+
+            <div id="cart-container" style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem;">
+                <!-- Cart Items -->
+                <div id="cart-items">
+                    <!-- Items injected here -->
+                </div>
+
+                <!-- Summary -->
+                <div
+                    style="background: white; padding: 2rem; border-radius: 8px; box-shadow: var(--shadow); height: fit-content;">
+                    <h3 style="margin-bottom: 1.5rem;">Order Summary</h3>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                        <span>Subtotal</span>
+                        <span id="subtotal">$0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                        <span>Shipping</span>
+                        <span>Free</span>
+                    </div>
+                    <div
+                        style="border-top: 1px solid #eee; margin: 1rem 0; padding-top: 1rem; display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem;">
+                        <span>Total</span>
+                        <span id="total">$0.00</span>
+                    </div>
+                    <a href="checkout.html" class="btn"
+                        style="width: 100%; text-align: center; margin-top: 1rem;">Proceed to Checkout</a>
+                </div>
+            </div>
+
+            <div id="empty-cart-msg" style="display: none; text-align: center; padding: 4rem;">
+                <h2>Your cart is empty</h2>
+                <p style="margin: 1rem 0 2rem; color: var(--light-text);">Looks like you haven't added anything yet.</p>
+                <a href="shop.html" class="btn">Start Shopping</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>WSL STUDIO</h4>
+                    <p>Premium interior design solutions for the modern lifestyle.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="shop.html">Shop</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> mailwaro.online@gmail.com</li>
+                        <li><i class="fas fa-phone"></i> +234 901 088 3999</li>
+                        <li><i class="fab fa-whatsapp"></i> +234 901 088 3999</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Gwarinpa, 900108, FCT Nigeria</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 WSL Interior Studio. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            const cartContainer = document.getElementById('cart-container');
+            const emptyMsg = document.getElementById('empty-cart-msg');
+            const subtotalEl = document.getElementById('subtotal');
+            const totalEl = document.getElementById('total');
+
+            if (state.cart.length === 0) {
+                cartContainer.style.display = 'none';
+                emptyMsg.style.display = 'block';
+                return;
+            }
+
+            cartContainer.style.display = 'grid';
+            emptyMsg.style.display = 'none';
+            container.innerHTML = '';
+
+            let total = 0;
+
+            state.cart.forEach(item => {
+                total += item.price * item.quantity;
+
+                const itemEl = document.createElement('div');
+                itemEl.style.cssText = 'display: flex; gap: 1.5rem; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid #eee;';
+                itemEl.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px;">
+                    <div style="flex-grow: 1;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <h3 style="font-size: 1.1rem;">${item.name}</h3>
+                            <span style="font-weight: bold;">${formatPrice(item.price * item.quantity)}</span>
+                        </div>
+                        <p style="color: var(--light-text); font-size: 0.9rem; margin-bottom: 1rem;">${item.category}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: inline-flex; border: 1px solid #ddd; border-radius: 4px;">
+                                <button onclick="updateQuantity(${item.id}, -1)" style="padding: 0.2rem 0.8rem; border: none; background: transparent; cursor: pointer;">-</button>
+                                <span style="padding: 0.2rem 0.8rem; line-height: 1.5;">${item.quantity}</span>
+                                <button onclick="updateQuantity(${item.id}, 1)" style="padding: 0.2rem 0.8rem; border: none; background: transparent; cursor: pointer;">+</button>
+                            </div>
+                            <button onclick="removeItem(${item.id})" style="color: #ff4444; background: none; border: none; cursor: pointer; font-size: 0.9rem;">Remove</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(itemEl);
+            });
+
+            subtotalEl.textContent = formatPrice(total);
+            totalEl.textContent = formatPrice(total);
+        }
+
+        function updateQuantity(id, change) {
+            const item = state.cart.find(i => i.id === id);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    removeItem(id);
+                } else {
+                    saveCart();
+                    renderCart();
+                    updateCartCount();
+                }
+            }
+        }
+
+        function removeItem(id) {
+            state.cart = state.cart.filter(i => i.id !== id);
+            saveCart();
+            renderCart();
+            updateCartCount();
+        }
+
+        document.addEventListener('DOMContentLoaded', renderCart);
+    </script>
+</body>
+
+</html>

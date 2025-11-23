@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | WSL Interior Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">WSL STUDIO</a>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                </div>
+                <div class="nav-icons">
+                    <a href="cart.html"><i class="fas fa-shopping-bag"></i></a>
+                    <div class="mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Checkout Section -->
+    <section style="padding: 4rem 0;">
+        <div class="container">
+            <h1 style="margin-bottom: 2rem; text-align: center;">Checkout</h1>
+
+            <div class="checkout-grid"
+                style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 4rem; max-width: 1000px; margin: 0 auto;">
+                <!-- Form -->
+                <div>
+                    <h3 style="margin-bottom: 1.5rem;">Shipping Information</h3>
+                    <form id="checkout-form" onsubmit="handleCheckout(event)">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <input type="text" placeholder="First Name" required
+                                style="padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" placeholder="Last Name" required
+                                style="padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                        <input type="email" placeholder="Email Address" required
+                            style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 1rem;">
+                        <input type="text" placeholder="Address" required
+                            style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 1rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                            <input type="text" placeholder="City" required
+                                style="padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" placeholder="State" required
+                                style="padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" placeholder="ZIP Code" required
+                                style="padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+
+                        <h3 style="margin-bottom: 1.5rem;">Payment Details</h3>
+                        <div
+                            style="background: #f9f9f9; padding: 1.5rem; border-radius: 8px; border: 1px solid #eee; margin-bottom: 2rem;">
+                            <div style="margin-bottom: 1rem;">
+                                <i class="far fa-credit-card" style="margin-right: 0.5rem;"></i> Credit Card
+                            </div>
+                            <input type="text" placeholder="Card Number" required
+                                style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 1rem;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <input type="text" placeholder="MM/YY" required
+                                    style="padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
+                                <input type="text" placeholder="CVC" required
+                                    style="padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn" style="width: 100%;">Place Order</button>
+                    </form>
+                </div>
+
+                <!-- Order Summary -->
+                <div
+                    style="background: white; padding: 2rem; border-radius: 8px; box-shadow: var(--shadow); height: fit-content;">
+                    <h3 style="margin-bottom: 1.5rem;">Your Order</h3>
+                    <div id="order-items" style="margin-bottom: 1.5rem; max-height: 300px; overflow-y: auto;">
+                        <!-- Items injected here -->
+                    </div>
+                    <div style="border-top: 1px solid #eee; padding-top: 1rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem;">
+                            <span>Total</span>
+                            <span id="checkout-total">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('order-items');
+            const totalEl = document.getElementById('checkout-total');
+            let total = 0;
+
+            if (state.cart.length === 0) {
+                window.location.href = 'cart.html';
+                return;
+            }
+
+            state.cart.forEach(item => {
+                total += item.price * item.quantity;
+                const div = document.createElement('div');
+                div.style.cssText = 'display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 0.9rem;';
+                div.innerHTML = `
+                    <span>${item.name} x ${item.quantity}</span>
+                    <span>${formatPrice(item.price * item.quantity)}</span>
+                `;
+                container.appendChild(div);
+            });
+
+            totalEl.textContent = formatPrice(total);
+        });
+
+        function handleCheckout(e) {
+            e.preventDefault();
+            alert('Order placed successfully! Thank you for shopping with WSL Studio.');
+            state.cart = [];
+            saveCart();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop | WSL Interior Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">WSL STUDIO</a>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html" class="active">Shop</a>
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                </div>
+                <div class="nav-icons">
+                    <a href="#"><i class="fas fa-search"></i></a>
+                    <a href="cart.html" class="cart-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                    <div class="mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Page Header -->
+    <div style="background-color: #f0f0f0; padding: 4rem 0; text-align: center; margin-bottom: 3rem;">
+        <div class="container">
+            <h1>Shop Our Collection</h1>
+            <p style="color: var(--light-text);">Find the perfect pieces for your home.</p>
+        </div>
+    </div>
+
+    <!-- Shop Section -->
+    <section class="shop-section" style="padding-bottom: 5rem;">
+        <div class="container">
+            <div style="display: flex; gap: 2rem;">
+                <!-- Sidebar Filters -->
+                <aside style="width: 250px; flex-shrink: 0;">
+                    <div
+                        style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <h3 style="margin-bottom: 1rem; font-size: 1.2rem;">Categories</h3>
+                        <ul style="line-height: 2;">
+                            <li><a href="#" onclick="filterProducts('all')">All Products</a></li>
+                            <li><a href="#" onclick="filterProducts('Living Room')">Living Room</a></li>
+                            <li><a href="#" onclick="filterProducts('Dining')">Dining</a></li>
+                            <li><a href="#" onclick="filterProducts('Lighting')">Lighting</a></li>
+                            <li><a href="#" onclick="filterProducts('Decor')">Decor</a></li>
+                        </ul>
+
+                        <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.2rem;">Price Range</h3>
+                        <input type="range" min="0" max="2000" style="width: 100%;">
+                        <div
+                            style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.9rem; color: var(--light-text);">
+                            <span>$0</span>
+                            <span>$2000+</span>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Product Grid -->
+                <div style="flex-grow: 1;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <p id="product-count">Showing all products</p>
+                        <select style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                            <option>Sort by: Featured</option>
+                            <option>Price: Low to High</option>
+                            <option>Price: High to Low</option>
+                        </select>
+                    </div>
+
+                    <div class="product-grid" id="shop-products-grid">
+                        <!-- Products injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>WSL STUDIO</h4>
+                    <p>Premium interior design solutions for the modern lifestyle.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="shop.html">Shop</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> mailwaro.online@gmail.com</li>
+                        <li><i class="fas fa-phone"></i> +234 901 088 3999</li>
+                        <li><i class="fab fa-whatsapp"></i> +234 901 088 3999</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Gwarinpa, 900108, FCT Nigeria</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 WSL Interior Studio. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        function renderProducts(products) {
+            const grid = document.getElementById('shop-products-grid');
+            const count = document.getElementById('product-count');
+            grid.innerHTML = '';
+
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <div class="product-image">
+                        <a href="product.html?id=${product.id}">
+                            <img src="${product.image}" alt="${product.name}">
+                        </a>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title"><a href="product.html?id=${product.id}">${product.name}</a></h3>
+                        <p class="product-price">${formatPrice(product.price)}</p>
+                        <button onclick="addToCart(${product.id})" class="btn" style="margin-top: 1rem; width: 100%;">Add to Cart</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            count.textContent = `Showing ${products.length} products`;
+        }
+
+        function filterProducts(category) {
+            if (category === 'all') {
+                renderProducts(state.products);
+            } else {
+                const filtered = state.products.filter(p => p.category === category);
+                renderProducts(filtered);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for category query param
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+
+            if (category) {
+                // Simple mapping for demo purposes
+                const catMap = {
+                    'living-room': 'Living Room',
+                    'dining': 'Dining',
+                    'decor': 'Decor'
+                };
+                filterProducts(catMap[category] || 'all');
+            } else {
+                renderProducts(state.products);
+            }
+        });
+    </script>
+</body>
+
+</html>
