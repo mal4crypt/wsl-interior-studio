@@ -127,6 +127,57 @@ function formatPrice(price) {
 document.addEventListener('DOMContentLoaded', () => {
     updateCartCount();
 
+    // Auth Logic
+    function switchAuthView(view) {
+        const loginView = document.getElementById('login-view');
+        const signupView = document.getElementById('signup-view');
+
+        if (loginView && signupView) { // Check if elements exist
+            if (view === 'login') {
+                loginView.style.display = 'block';
+                signupView.style.display = 'none';
+            } else {
+                loginView.style.display = 'none';
+                signupView.style.display = 'block';
+            }
+        }
+    }
+
+    function handleLogin(e) {
+        e.preventDefault();
+        const emailInput = document.getElementById('login-email');
+        if (emailInput) {
+            const email = emailInput.value;
+            // Mock login
+            alert(`Successfully logged in as ${email}`);
+            window.location.href = 'index.html';
+        }
+    }
+
+    function handleSignup(e) {
+        e.preventDefault();
+        const nameInput = document.getElementById('signup-name');
+        const emailInput = document.getElementById('signup-email');
+        const passwordInput = document.getElementById('signup-password');
+        const confirmInput = document.getElementById('signup-confirm');
+
+        if (nameInput && emailInput && passwordInput && confirmInput) {
+            const name = nameInput.value;
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            const confirm = confirmInput.value;
+
+            if (password !== confirm) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            // Mock signup
+            alert(`Account created successfully for ${name}! Please sign in.`);
+            switchAuthView('login');
+        }
+    }
+
     // Mobile Menu Logic
     const menuBtn = document.querySelector('.mobile-menu-btn');
     const navLinks = document.querySelector('.nav-links');
