@@ -188,7 +188,7 @@
             saveCart();
 
             // Show success message
-            alert(`Order placed successfully!\n\nOrder ID: ${transaction.id}\nTotal: $${total.toFixed(2)}\n\nYou can track your order using the bot by typing "track my order" and providing your Order ID.\n\nThank you for shopping with WSL Studio!`);
+            showToast(`Order placed successfully! Order ID: ${transaction.id}. You can track your order using the bot.`, 'success');
 
             // Redirect to home
             window.location.href = 'index.html';

@@ -166,7 +166,7 @@
             e.preventDefault();
             const email = document.getElementById('reset-email').value;
             if (email) {
-                alert(`Password reset link sent to ${email}`);
+                showToast(`Password reset link sent to ${email}`, 'success');
                 switchAuthView('login');
             }
         }

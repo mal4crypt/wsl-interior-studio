@@ -101,6 +101,37 @@ const state = {
 // DOM Elements
 const cartCount = document.querySelector('.cart-count');
 
+// Toast Notification System
+function showToast(message, type = 'success') {
+    // Create container if it doesn't exist
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    // Create toast
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+
+    toast.innerHTML = `
+        <span class="toast-icon">${icon}</span>
+        <span class="toast-message">${message}</span>
+        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.add('hiding');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
 // Functions
 function updateCartCount() {
     if (cartCount) {
@@ -114,7 +145,7 @@ function updateCartCount() {
 
 function addToCart(productId) {
     if (!state.currentUser) {
-        alert("Please sign in to add items to your cart.");
+        showToast("Please sign in to add items to your cart.", 'info');
         window.location.href = 'login.html';
         return;
     }
@@ -144,7 +175,7 @@ function addToCart(productId) {
     updateCartCount();
 
     // Show feedback
-    alert(`${product.name} added to cart!`);
+    showToast(`${product.name} added to cart!`);
 }
 
 function saveUsers() {
@@ -177,7 +208,7 @@ function formatPrice(price) {
 function registerUser(name, email, password) {
     const existingUser = state.users.find(u => u.email === email);
     if (existingUser) {
-        alert('User already exists with this email.');
+        showToast('User already exists with this email.', 'error');
         return false;
     }
 
@@ -365,12 +396,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const confirm = confirmInput.value;
 
                 if (password !== confirm) {
-                    alert('Passwords do not match!');
+                    showToast('Passwords do not match!', 'error');
                     return;
                 }
 
                 if (registerUser(name, email, password)) {
-                    alert(`Account created successfully for ${name}! Logging you in...`);
+                    showToast(`Account created successfully! Welcome, ${name}!`, 'success');
                     loginUser(email, password);
                 }
             }
