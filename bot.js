@@ -3,19 +3,48 @@
 const botState = {
     isOpen: false,
     chatHistory: [],
-    step: 'idle', // idle, recording_transaction, waiting_for_input
-    transactionData: {}
+    step: 'idle', // idle, recording_transaction, messaging_admin, guided_discovery
+    data: {} // Generic data holder for multi-step flows
 };
 
-// Knowledge Base
-const faq = {
-    "hello": "Hello! I'm WSL Bot. How can I help you today? I can recommend products, answer questions, or help you record a transaction.",
-    "hi": "Hi there! Welcome to WSL Interior Studio.",
-    "help": "I can help you with:\n- Finding products (e.g., 'show me sofas')\n- Recording a transaction (type 'record transaction')\n- General questions about our services.",
-    "contact": "You can reach us via the Contact page or WhatsApp at +234 901 088 3999.",
-    "return": "We accept returns within 30 days. Please contact support for assistance.",
-    "location": "We are located at Gwarinpa, 900108, FCT Nigeria."
-};
+// Knowledge Base & Intent Matching
+const intents = [
+    {
+        keywords: ['hello', 'hi', 'hey', 'greetings'],
+        response: "Hello! I'm WSL Bot. I can help you find products, record transactions, or send a message to the admin. What would you like to do?"
+    },
+    {
+        keywords: ['help', 'support', 'assist'],
+        response: "I can help with:\n- **Finding Products**: Type 'I need a sofa' or 'help me choose'.\n- **Transactions**: Type 'record transaction'.\n- **Contact**: Type 'leave a message' to contact admin."
+    },
+    {
+        keywords: ['contact', 'email', 'phone', 'whatsapp', 'reach'],
+        response: "You can reach us via the Contact page or WhatsApp at +234 901 088 3999. Or type 'leave a message' to send a note directly here."
+    },
+    {
+        keywords: ['return', 'refund', 'policy'],
+        response: "We accept returns within 30 days of delivery. Please contact support for assistance."
+    },
+    {
+        keywords: ['location', 'address', 'where'],
+        response: "We are located at Gwarinpa, 900108, FCT Nigeria."
+    },
+    {
+        keywords: ['sit', 'seat', 'couch', 'lounge'],
+        category: 'Living Room',
+        response: "It sounds like you're looking for seating. Check out our sofas and armchairs!"
+    },
+    {
+        keywords: ['eat', 'dining', 'food', 'table'],
+        category: 'Dining',
+        response: "Looking to upgrade your dining area? Here are some tables and sets."
+    },
+    {
+        keywords: ['dark', 'bright', 'lamp', 'light'],
+        category: 'Lighting',
+        response: "Let's brighten things up! Here are our lighting options."
+    }
+];
 
 // UI Injection
 document.addEventListener('DOMContentLoaded', () => {
@@ -183,6 +212,20 @@ function injectBotUI() {
             object-fit: cover;
             border-radius: 4px;
         }
+        .quick-reply-btn {
+            background: white;
+            border: 1px solid var(--primary-color, #C19A6B);
+            color: var(--primary-color, #C19A6B);
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            margin: 2px;
+            font-size: 12px;
+        }
+        .quick-reply-btn:hover {
+            background: var(--primary-color, #C19A6B);
+            color: white;
+        }
     `;
     document.head.appendChild(style);
 }
@@ -236,50 +279,77 @@ function addMessage(text, sender) {
 function processMessage(text) {
     const lowerText = text.toLowerCase();
 
-    // Transaction Recording Flow
+    // 1. Handle Active Flows
     if (botState.step === 'recording_transaction') {
         handleTransactionStep(text);
         return;
     }
+    if (botState.step === 'messaging_admin') {
+        handleMessagingStep(text);
+        return;
+    }
+    if (botState.step === 'guided_discovery') {
+        handleDiscoveryStep(text);
+        return;
+    }
 
+    // 2. Trigger New Flows
     if (lowerText.includes('record transaction') || lowerText.includes('new sale')) {
         botState.step = 'recording_transaction';
-        botState.transactionData = { step: 0 };
+        botState.data = { step: 0 };
         addMessage("Sure, I can help you record a transaction. What is the **Client's Name**?", 'bot');
         return;
     }
 
-    // Product Recommendations
+    if (lowerText.includes('leave a message') || lowerText.includes('message admin') || lowerText.includes('contact admin')) {
+        botState.step = 'messaging_admin';
+        botState.data = { step: 0 };
+        addMessage("Okay, I'll send a message to the admin for you. What is your **Name**?", 'bot');
+        return;
+    }
+
+    if (lowerText.includes('choose') || lowerText.includes('unsure') || lowerText.includes('recommend') || lowerText.includes('help me find')) {
+        botState.step = 'guided_discovery';
+        botState.data = { step: 0 };
+        addMessage("I can help you find the perfect item! First, which **Room** are you furnishing? (e.g., Living Room, Dining, Bedroom)", 'bot');
+        return;
+    }
+
+    // 3. Implicit Product Matching
+    // Check for specific product keywords directly
     if (lowerText.includes('sofa') || lowerText.includes('chair') || lowerText.includes('table') || lowerText.includes('light') || lowerText.includes('decor')) {
         const keyword = lowerText.match(/(sofa|chair|table|light|decor)/)[0];
         recommendProducts(keyword);
         return;
     }
 
-    // General FAQ
-    let response = "I'm not sure about that. Try asking about our products or type 'help' to see what I can do.";
-
-    for (const key in faq) {
-        if (lowerText.includes(key)) {
-            response = faq[key];
-            break;
+    // Check intents for category matching (e.g., "I need to sit")
+    for (const intent of intents) {
+        if (intent.keywords.some(k => lowerText.includes(k))) {
+            if (intent.category) {
+                addMessage(intent.response, 'bot');
+                recommendProducts(intent.category);
+                return;
+            }
+            addMessage(intent.response, 'bot');
+            return;
         }
     }
 
-    addMessage(response, 'bot');
+    // 4. Fallback
+    addMessage("I'm not sure I understand. You can ask me to **find products**, **record a transaction**, or **leave a message**.", 'bot');
 }
 
 function recommendProducts(keyword) {
-    // Access products from script.js state if available, else use defaults
     const products = (window.state && window.state.products) ? window.state.products : [];
 
     const matches = products.filter(p =>
-        p.name.toLowerCase().includes(keyword) ||
-        p.category.toLowerCase().includes(keyword)
+        p.name.toLowerCase().includes(keyword.toLowerCase()) ||
+        p.category.toLowerCase().includes(keyword.toLowerCase())
     );
 
     if (matches.length > 0) {
-        let msg = `Here are some ${keyword}s I found for you:<br>`;
+        let msg = `Here are some ${keyword}s I found:<br>`;
         matches.slice(0, 3).forEach(p => {
             msg += `
                 <div class="product-card-mini" onclick="window.location.href='product.html?id=${p.id}'">
@@ -297,50 +367,108 @@ function recommendProducts(keyword) {
     }
 }
 
-function handleTransactionStep(text) {
-    const data = botState.transactionData;
+// Flow Handlers
 
+function handleTransactionStep(text) {
+    const data = botState.data;
     switch (data.step) {
-        case 0: // Client Name received
+        case 0: // Name
             data.clientName = text;
             data.step++;
             addMessage("Got it. What is the **Client's Contact (Email or Phone)**?", 'bot');
             break;
-        case 1: // Contact received
+        case 1: // Contact
             data.clientContact = text;
             data.step++;
             addMessage("Okay. What **Property/Item** did they buy?", 'bot');
             break;
-        case 2: // Property received
+        case 2: // Property
             data.property = text;
             data.step++;
-            addMessage("Almost done. Any notes or receipt reference? (Type 'none' if empty)", 'bot');
+            addMessage("Almost done. Any notes? (Type 'none' if empty)", 'bot');
             break;
-        case 3: // Notes received
+        case 3: // Notes
             data.notes = text;
-
-            // Save Transaction
             const newTransaction = {
                 id: Date.now(),
                 date: new Date().toLocaleDateString(),
                 clientName: data.clientName,
                 clientContact: data.clientContact,
                 property: data.property,
-                status: 'Pending', // Default to pending for admin approval
+                status: 'Pending',
                 receipt: 'Generated via Bot'
             };
-
             if (window.state && window.state.transactions) {
                 window.state.transactions.unshift(newTransaction);
                 localStorage.setItem('transactions', JSON.stringify(window.state.transactions));
-                addMessage(`Transaction recorded successfully! <br><strong>ID:</strong> ${newTransaction.id}<br><strong>Status:</strong> Pending Approval`, 'bot');
-            } else {
-                addMessage("I couldn't access the database right now, but I've noted the details.", 'bot');
+                addMessage(`Transaction recorded! ID: ${newTransaction.id}. Status: Pending.`, 'bot');
             }
-
-            // Reset
             botState.step = 'idle';
-            botState.transactionData = {};
+            botState.data = {};
+            break;
+    }
+}
+
+function handleMessagingStep(text) {
+    const data = botState.data;
+    switch (data.step) {
+        case 0: // Name
+            data.senderName = text;
+            data.step++;
+            addMessage(`Hi ${data.senderName}. What is your **Email** so we can reply?`, 'bot');
+            break;
+        case 1: // Email
+            data.senderEmail = text;
+            data.step++;
+            addMessage("Thanks. Please type your **Message** below.", 'bot');
+            break;
+        case 2: // Message
+            data.message = text;
+
+            // Save Message
+            const newMessage = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString(),
+                sender: data.senderName,
+                email: data.senderEmail,
+                message: data.message,
+                read: false
+            };
+
+            // Ensure botMessages array exists in state/localStorage
+            let messages = JSON.parse(localStorage.getItem('botMessages')) || [];
+            messages.unshift(newMessage);
+            localStorage.setItem('botMessages', JSON.stringify(messages));
+
+            addMessage("Message sent! The admin will get back to you soon.", 'bot');
+            botState.step = 'idle';
+            botState.data = {};
+            break;
+    }
+}
+
+function handleDiscoveryStep(text) {
+    const data = botState.data;
+    const lowerText = text.toLowerCase();
+
+    switch (data.step) {
+        case 0: // Room
+            if (lowerText.includes('living')) data.category = 'Living Room';
+            else if (lowerText.includes('dining')) data.category = 'Dining';
+            else if (lowerText.includes('bed')) data.category = 'Bedroom'; // Assuming we might have this or map to others
+            else if (lowerText.includes('light')) data.category = 'Lighting';
+            else data.category = 'Decor'; // Default fallback or logic
+
+            data.step++;
+            addMessage(`Great! For the ${data.category}, what is your budget range? (e.g., "under 500", "no limit")`, 'bot');
+            break;
+
+        case 1: // Budget (Mock logic for now)
+            // We could parse numbers here, but for now let's just show recommendations based on category
+            addMessage(`Understood. Here are some top picks for your ${data.category}:`, 'bot');
+            recommendProducts(data.category);
+            botState.step = 'idle';
+            botState.data = {};
             break;
     }
 }
