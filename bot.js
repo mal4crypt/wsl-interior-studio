@@ -15,7 +15,7 @@ const intents = [
     },
     {
         keywords: ['help', 'support', 'assist'],
-        response: "I can help with:\n- **Finding Products**: Type 'I need a sofa' or 'help me choose'.\n- **Transactions**: Type 'record transaction'.\n- **Contact**: Type 'leave a message' to contact admin."
+        response: "I can help with:\n- **Finding Products**: Type 'I need a sofa' or 'help me choose'.\n- **Transactions**: Type 'record transaction'.\n- **Contact**: Type 'leave a message' to contact admin.\n- **Navigation**: Type 'where is the shop' or 'go to cart'."
     },
     {
         keywords: ['contact', 'email', 'phone', 'whatsapp', 'reach'],
@@ -26,7 +26,7 @@ const intents = [
         response: "We accept returns within 30 days of delivery. Please contact support for assistance."
     },
     {
-        keywords: ['location', 'address', 'where'],
+        keywords: ['location', 'address'],
         response: "We are located at Gwarinpa, 900108, FCT Nigeria."
     },
     {
@@ -293,7 +293,48 @@ function processMessage(text) {
         return;
     }
 
-    // 2. Trigger New Flows
+    // 2. Navigation Intents (New)
+    if (lowerText.includes('where is') || lowerText.includes('go to') || lowerText.includes('navigate to') || lowerText.includes('show me')) {
+        if (lowerText.includes('shop') || lowerText.includes('store') || lowerText.includes('catalogue')) {
+            addMessage("Redirecting you to the Shop...", 'bot');
+            setTimeout(() => window.location.href = 'shop.html', 1000);
+            return;
+        }
+        if (lowerText.includes('cart') || lowerText.includes('basket')) {
+            addMessage("Taking you to your Cart...", 'bot');
+            setTimeout(() => window.location.href = 'cart.html', 1000);
+            return;
+        }
+        if (lowerText.includes('contact') || lowerText.includes('support')) {
+            addMessage("Redirecting to Contact page...", 'bot');
+            setTimeout(() => window.location.href = 'contact.html', 1000);
+            return;
+        }
+        if (lowerText.includes('home') || lowerText.includes('main')) {
+            addMessage("Going to Home page...", 'bot');
+            setTimeout(() => window.location.href = 'index.html', 1000);
+            return;
+        }
+        if (lowerText.includes('about') || lowerText.includes('story')) {
+            addMessage("Redirecting to About page...", 'bot');
+            setTimeout(() => window.location.href = 'about.html', 1000);
+            return;
+        }
+        // Fallback for "Where is it" if context implies shop
+        if (lowerText.includes('it') && (lowerText.includes('where is') || lowerText.includes('find'))) {
+            addMessage("If you are looking for our products, I'll take you to the Shop.", 'bot');
+            setTimeout(() => window.location.href = 'shop.html', 1500);
+            return;
+        }
+    }
+
+    // 3. Price-Based Recommendations (New)
+    if (lowerText.includes('cheap') || lowerText.includes('lowest price') || lowerText.includes('budget') || lowerText.includes('affordable')) {
+        recommendCheapestProducts();
+        return;
+    }
+
+    // 4. Trigger New Flows
     if (lowerText.includes('record transaction') || lowerText.includes('new sale')) {
         botState.step = 'recording_transaction';
         botState.data = { step: 0 };
@@ -315,7 +356,7 @@ function processMessage(text) {
         return;
     }
 
-    // 3. Implicit Product Matching
+    // 5. Implicit Product Matching
     // Check for specific product keywords directly
     if (lowerText.includes('sofa') || lowerText.includes('chair') || lowerText.includes('table') || lowerText.includes('light') || lowerText.includes('decor')) {
         const keyword = lowerText.match(/(sofa|chair|table|light|decor)/)[0];
@@ -336,8 +377,8 @@ function processMessage(text) {
         }
     }
 
-    // 4. Fallback
-    addMessage("I'm not sure I understand. You can ask me to **find products**, **record a transaction**, or **leave a message**.", 'bot');
+    // 6. Fallback
+    addMessage("I'm not sure I understand. You can ask me to **find products**, **record a transaction**, **leave a message**, or **navigate** to a page.", 'bot');
 }
 
 function recommendProducts(keyword) {
@@ -364,6 +405,31 @@ function recommendProducts(keyword) {
         addMessage(msg, 'bot');
     } else {
         addMessage(`I couldn't find any ${keyword}s at the moment. Please check our Shop page.`, 'bot');
+    }
+}
+
+function recommendCheapestProducts() {
+    const products = (window.state && window.state.products) ? window.state.products : [];
+
+    // Sort by price ascending
+    const sorted = [...products].sort((a, b) => a.price - b.price);
+
+    if (sorted.length > 0) {
+        let msg = `Here are the most affordable items in our catalogue:<br>`;
+        sorted.slice(0, 3).forEach(p => {
+            msg += `
+                <div class="product-card-mini" onclick="window.location.href='product.html?id=${p.id}'">
+                    <img src="${p.image}" alt="${p.name}">
+                    <div>
+                        <strong>${p.name}</strong><br>
+                        <small>$${p.price}</small>
+                    </div>
+                </div>
+            `;
+        });
+        addMessage(msg, 'bot');
+    } else {
+        addMessage("I couldn't find any products.", 'bot');
     }
 }
 
