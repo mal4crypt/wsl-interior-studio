@@ -43,6 +43,20 @@ const state = {
             price: 3299,
             category: "Living Room",
             image: "images/sofa-set.jpg"
+        },
+        {
+            id: 7,
+            name: "Luxury Armchair Pair",
+            price: 1899,
+            category: "Living Room",
+            image: "images/luxury-armchairs.jpg"
+        },
+        {
+            id: 8,
+            name: "Modern Mustard Lounge Chair",
+            price: 899,
+            category: "Living Room",
+            image: "images/modern-yellow-chair.jpg"
         }
     ]
 };
