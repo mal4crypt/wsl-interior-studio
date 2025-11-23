@@ -9,28 +9,83 @@ const botState = {
     isDragging: false
 };
 
-// Knowledge Base & Intent Matching
+// Helper function to check if bot recording is enabled
+function isBotRecordingEnabled() {
+    const settings = JSON.parse(localStorage.getItem('botSettings')) || { recordingEnabled: true };
+    return settings.recordingEnabled !== false; // Default to true if not set
+}
+
+// Expanded Knowledge Base & Intent Matching
 const intents = [
     {
-        keywords: ['hello', 'hi', 'hey', 'greetings'],
+        keywords: ['hello', 'hi', 'hey', 'greetings', 'good morning', 'good afternoon', 'good evening'],
         response: "Hello! I'm WSL Bot. I can help you find products, negotiate prices, report problems, confirm payments, or send messages to the admin. What would you like to do?"
     },
     {
-        keywords: ['help', 'support', 'assist'],
+        keywords: ['help', 'support', 'assist', 'what can you do'],
         response: "I can help with:<br>• **Finding Products**: Type 'cheapest chair' or 'help me choose'.<br>• **Price Negotiation**: Type 'negotiate price'.<br>• **Problem Reporting**: Type 'report a problem'.<br>• **Payment/Shipping**: Type 'confirm payment'.<br>• **Transactions**: Type 'record transaction'.<br>• **Contact**: Type 'leave a message'.<br>• **Navigation**: Type 'where is the shop'."
     },
     {
-        keywords: ['contact', 'email', 'phone', 'whatsapp', 'reach'],
-        response: "You can reach us via the Contact page or WhatsApp at +234 901 088 3999. Or type 'leave a message' to send a note directly here."
+        keywords: ['contact', 'email', 'phone', 'whatsapp', 'reach', 'call'],
+        response: "You can reach us via:<br>• **WhatsApp**: +234 901 088 3999<br>• **Email**: mailwaro.online@gmail.com<br>• **Phone**: +234 901 088 3999<br>Or type 'leave a message' to send a note directly here."
     },
     {
-        keywords: ['return', 'refund', 'policy'],
-        response: "We accept returns within 30 days of delivery. Please contact support for assistance."
+        keywords: ['hours', 'open', 'close', 'timing', 'schedule', 'when are you open'],
+        response: "We're open Monday to Saturday, 9:00 AM - 6:00 PM. We're closed on Sundays. For urgent inquiries, you can WhatsApp us anytime at +234 901 088 3999."
     },
     {
-        keywords: ['location', 'address'],
-        response: "We are located at Gwarinpa, 900108, FCT Nigeria."
+        keywords: ['return', 'refund', 'policy', 'exchange', 'money back'],
+        response: "We accept returns within 30 days of delivery for unused items in original packaging. Refunds are processed within 7-10 business days. Please contact support for assistance."
     },
+    {
+        keywords: ['warranty', 'guarantee', 'defect', 'damage'],
+        response: "All our products come with a 1-year manufacturer's warranty against defects. If you receive a damaged item, please report it within 48 hours for immediate replacement."
+    },
+    {
+        keywords: ['delivery', 'shipping', 'ship', 'deliver', 'how long'],
+        response: "We offer delivery within Lagos (2-3 days) and nationwide shipping (5-7 days). Delivery fees vary by location. Free delivery for orders above $2000!"
+    },
+    {
+        keywords: ['payment', 'pay', 'method', 'card', 'transfer', 'cash'],
+        response: "We accept:<br>• Bank Transfer<br>• Credit/Debit Cards<br>• Cash on Delivery (Lagos only)<br>• Mobile Money<br>All payments are secure and encrypted."
+    },
+    {
+        keywords: ['location', 'address', 'where are you', 'visit', 'showroom'],
+        response: "Visit our showroom at:<br>**Gwarinpa, 900108, FCT Nigeria**<br><br>We'd love to see you! Our showroom is open Monday-Saturday, 9 AM - 6 PM."
+    },
+    {
+        keywords: ['price', 'cost', 'expensive', 'pricing', 'how much'],
+        response: "Our prices range from $199 to $3299 depending on the item. We offer competitive pricing and regular discounts. Type 'cheapest' to see our most affordable items, or 'negotiate price' to request a discount!"
+    },
+    {
+        keywords: ['discount', 'sale', 'offer', 'promo', 'deal'],
+        response: "We regularly have special offers! Currently, we offer:<br>• Free delivery on orders above $2000<br>• Bulk purchase discounts<br>• Seasonal sales<br>Type 'negotiate price' to request a custom discount on any item!"
+    },
+    {
+        keywords: ['quality', 'material', 'durable', 'last'],
+        response: "We pride ourselves on quality! All our furniture is made from premium materials including solid wood, genuine leather, and high-grade fabrics. Each piece is built to last with proper care."
+    },
+    {
+        keywords: ['custom', 'customize', 'bespoke', 'made to order'],
+        response: "Yes, we offer custom furniture design! Share your requirements by typing 'leave a message' and our design team will contact you with options and pricing."
+    },
+    {
+        keywords: ['install', 'assembly', 'setup', 'assemble'],
+        response: "We provide free assembly and installation for all furniture purchases in Lagos. For other locations, assembly services are available at an additional fee."
+    },
+    {
+        keywords: ['catalog', 'catalogue', 'products', 'items', 'what do you sell'],
+        response: "We specialize in luxury interior furniture including:<br>• Living Room (sofas, chairs, tables)<br>• Dining Sets<br>• Lighting<br>• Decor & Accessories<br>Type 'go to shop' to browse our full catalogue!"
+    },
+    {
+        keywords: ['thank', 'thanks', 'appreciate'],
+        response: "You're very welcome! I'm here anytime you need assistance. Is there anything else I can help you with?"
+    },
+    {
+        keywords: ['bye', 'goodbye', 'see you', 'later'],
+        response: "Thank you for chatting with me! Feel free to reach out anytime. Have a wonderful day! 👋"
+    },
+    // Category-based intents
     {
         keywords: ['sit', 'seat', 'couch', 'lounge'],
         category: 'Living Room',
@@ -543,7 +598,8 @@ function processMessage(text) {
     }
 
     // 9. Fallback
-    addMessage("I'm not sure I understand. You can ask me to:<br>• **Find products** (e.g., 'cheapest chair')<br>• **Negotiate prices**<br>• **Report a problem**<br>• **Confirm payment/shipping**<br>• **Record a transaction**<br>• **Leave a message**<br>• **Navigate** to a page", 'bot');
+    // 9. Intelligent Fallback
+    addMessage("I'm here to help! While I may not have a specific answer to that question, I can assist you with:<br><br>🛋️ **Furniture Shopping**: Browse products, get recommendations, find deals<br>💰 **Pricing**: Negotiate discounts, check prices, payment options<br>📦 **Orders**: Confirm payments, track delivery, report issues<br>📞 **Contact**: Reach our team, leave a message, get support<br>ℹ️ **Info**: Business hours, location, policies, warranties<br><br>What would you like help with today?", 'bot');
 }
 
 function recommendProducts(keyword) {
@@ -692,10 +748,12 @@ function handleMessagingStep(text) {
                 read: false
             };
 
-            // Ensure botMessages array exists in state/localStorage
-            let messages = JSON.parse(localStorage.getItem('botMessages')) || [];
-            messages.unshift(newMessage);
-            localStorage.setItem('botMessages', JSON.stringify(messages));
+            // Save message only if recording is enabled
+            if (isBotRecordingEnabled()) {
+                let messages = JSON.parse(localStorage.getItem('botMessages')) || [];
+                messages.unshift(newMessage);
+                localStorage.setItem('botMessages', JSON.stringify(messages));
+            }
 
             addMessage("Message sent! The admin will get back to you soon.", 'bot');
             botState.step = 'idle';
@@ -783,9 +841,12 @@ function handleNegotiationStep(text) {
                 read: false
             };
 
-            let messages = JSON.parse(localStorage.getItem('botMessages')) || [];
-            messages.unshift(negotiationRequest);
-            localStorage.setItem('botMessages', JSON.stringify(messages));
+            // Save negotiation request only if recording is enabled
+            if (isBotRecordingEnabled()) {
+                let messages = JSON.parse(localStorage.getItem('botMessages')) || [];
+                messages.unshift(negotiationRequest);
+                localStorage.setItem('botMessages', JSON.stringify(messages));
+            }
 
             addMessage(`Your negotiation request has been submitted! The admin will review your request for **${data.product.name}** at **$${data.discountedPrice}** (${data.discountPercent}% off) and get back to you soon.`, 'bot');
             botState.step = 'idle';
@@ -825,9 +886,12 @@ function handleProblemReportingStep(text) {
                 read: false
             };
 
-            let messages = JSON.parse(localStorage.getItem('botMessages')) || [];
-            messages.unshift(problemReport);
-            localStorage.setItem('botMessages', JSON.stringify(messages));
+            // Save problem report only if recording is enabled
+            if (isBotRecordingEnabled()) {
+                let messages = JSON.parse(localStorage.getItem('botMessages')) || [];
+                messages.unshift(problemReport);
+                localStorage.setItem('botMessages', JSON.stringify(messages));
+            }
 
             addMessage("Thank you for reporting this issue. Your problem report has been sent to our admin team. We'll investigate and get back to you as soon as possible.", 'bot');
             botState.step = 'idle';
@@ -899,21 +963,23 @@ function handlePaymentShippingStep(text) {
                 localStorage.setItem('transactions', JSON.stringify(window.state.transactions));
             }
 
-            // Also notify admin
-            const adminNotification = {
-                id: Date.now(),
-                date: new Date().toLocaleDateString(),
-                type: 'Payment & Shipping Confirmation',
-                sender: data.customerName,
-                contact: data.shippingPhone,
-                message: `Payment: ${data.paymentMethod} - $${data.paymentAmount} (Ref: ${data.paymentReference})<br>Shipping: ${data.shippingAddress}<br>Instructions: ${data.deliveryInstructions}`,
-                status: 'Pending Confirmation',
-                read: false
-            };
+            // Notify admin only if recording is enabled
+            if (isBotRecordingEnabled()) {
+                const adminNotification = {
+                    id: Date.now(),
+                    date: new Date().toLocaleDateString(),
+                    type: 'Payment & Shipping Confirmation',
+                    sender: data.customerName,
+                    contact: data.shippingPhone,
+                    message: `Payment: ${data.paymentMethod} - $${data.paymentAmount} (Ref: ${data.paymentReference})<br>Shipping: ${data.shippingAddress}<br>Instructions: ${data.deliveryInstructions}`,
+                    status: 'Pending Confirmation',
+                    read: false
+                };
 
-            let messages = JSON.parse(localStorage.getItem('botMessages')) || [];
-            messages.unshift(adminNotification);
-            localStorage.setItem('botMessages', JSON.stringify(messages));
+                let messages = JSON.parse(localStorage.getItem('botMessages')) || [];
+                messages.unshift(adminNotification);
+                localStorage.setItem('botMessages', JSON.stringify(messages));
+            }
 
             addMessage(`Perfect! Your payment and shipping details have been recorded.<br><br>**Summary:**<br>• Payment: ${data.paymentMethod} - $${data.paymentAmount}<br>• Reference: ${data.paymentReference}<br>• Delivery to: ${data.shippingAddress}<br>• Contact: ${data.shippingPhone}<br><br>Our admin will confirm and process your order shortly. Thank you!`, 'bot');
             botState.step = 'idle';

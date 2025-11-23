@@ -141,6 +141,53 @@
         .tab-content.active {
             display: block;
         }
+
+        /* Toggle Switch Styles */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.toggle-slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked+.toggle-slider:before {
+            transform: translateX(26px);
+        }
     </style>
 </head>
 
@@ -158,6 +205,7 @@
                 <li><a href="#" onclick="switchTab('inbox')"><i class="fas fa-inbox"></i> Inbox <span id="inbox-badge"
                             class="badge" style="display:none;">0</span></a></li>
                 <li><a href="#" onclick="switchTab('contact')"><i class="fas fa-address-card"></i> Contact Info</a></li>
+                <li><a href="#" onclick="switchTab('settings')"><i class="fas fa-cog"></i> Bot Settings</a></li>
                 <li style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
                     <a href="index.html"><i class="fas fa-home"></i> Back to Home</a>
                 </li>
@@ -321,6 +369,38 @@
                     </form>
                 </div>
             </div>
+
+            <!-- Settings Tab -->
+            <div id="settings-tab" class="tab-content">
+                <div class="card">
+                    <h3>Bot Settings</h3>
+                    <p style="color: #666; margin-bottom: 1.5rem;">Control how the WSL Bot handles customer interactions
+                        and data recording.</p>
+
+                    <div class="form-group"
+                        style="border: 1px solid #eee; padding: 1.5rem; border-radius: 8px; background: #f9f9f9;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <label style="font-size: 1.1rem; margin-bottom: 0.5rem; display: block;">Enable Bot Data
+                                    Recording</label>
+                                <p style="color: #666; font-size: 0.9rem; margin: 0;">When enabled, the bot will save
+                                    all customer messages, negotiation requests, problem reports, and payment
+                                    confirmations to your admin inbox. When disabled, the bot will still respond to
+                                    customers but won't record data.</p>
+                            </div>
+                            <label class="toggle-switch" style="margin-left: 2rem;">
+                                <input type="checkbox" id="bot-recording-toggle" onchange="handleBotRecordingToggle()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="recording-status"
+                        style="margin-top: 1rem; padding: 1rem; border-radius: 8px; font-weight: 500;">
+                        <!-- Status will be updated by JavaScript -->
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -376,6 +456,7 @@
             renderClientsTable();
             renderInbox();
             loadContactInfo();
+            loadBotSettings();
         });
 
         // Tab Switching
@@ -394,7 +475,8 @@
                 'transactions': 'Transaction Records',
                 'clients': 'Client Management',
                 'inbox': 'Bot Inbox',
-                'contact': 'Contact Information'
+                'contact': 'Contact Information',
+                'settings': 'Bot Settings'
             };
             document.getElementById('page-title').textContent = titles[tabName];
         }
@@ -646,6 +728,34 @@
             }
             if (event.target == cartModal) {
                 cartModal.style.display = 'none';
+            }
+        }
+
+        // Bot Settings Logic
+        function loadBotSettings() {
+            const settings = JSON.parse(localStorage.getItem('botSettings')) || { recordingEnabled: true };
+            document.getElementById('bot-recording-toggle').checked = settings.recordingEnabled !== false;
+            updateRecordingStatus(settings.recordingEnabled !== false);
+        }
+
+        function handleBotRecordingToggle() {
+            const isEnabled = document.getElementById('bot-recording-toggle').checked;
+            const settings = { recordingEnabled: isEnabled };
+            localStorage.setItem('botSettings', JSON.stringify(settings));
+            updateRecordingStatus(isEnabled);
+            alert(isEnabled ? 'Bot data recording enabled!' : 'Bot data recording disabled. The bot will still respond but won\'t save data to your inbox.');
+        }
+
+        function updateRecordingStatus(isEnabled) {
+            const statusDiv = document.getElementById('recording-status');
+            if (isEnabled) {
+                statusDiv.style.background = '#d4edda';
+                statusDiv.style.color = '#155724';
+                statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Recording is currently <strong>ENABLED</strong>. All bot interactions will be saved to your inbox.';
+            } else {
+                statusDiv.style.background = '#fff3cd';
+                statusDiv.style.color = '#856404';
+                statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Recording is currently <strong>DISABLED</strong>. The bot will respond to customers but won\'t save data.';
             }
         }
     </script>
