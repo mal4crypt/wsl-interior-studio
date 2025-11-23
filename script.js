@@ -29,6 +29,20 @@ const state = {
             price: 89,
             category: "Decor",
             image: "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?q=80&w=1000&auto=format&fit=crop"
+        },
+        {
+            id: 5,
+            name: "Luxury Dining Set",
+            price: 2499,
+            category: "Dining",
+            image: "images/dining-set.jpg"
+        },
+        {
+            id: 6,
+            name: "Contemporary Sofa Suite",
+            price: 3299,
+            category: "Living Room",
+            image: "images/sofa-set.jpg"
         }
     ]
 };
