@@ -31,53 +31,11 @@ const state = {
             image: "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?q=80&w=1000&auto=format&fit=crop"
         },
         {
-            id: 5,
-            name: "Luxury Dining Set",
-            price: 2499,
-            category: "Dining",
-            image: "images/dining-set.jpg"
-        },
-        {
-            id: 6,
-            name: "Contemporary Sofa Suite",
-            price: 3299,
-            category: "Living Room",
-            image: "images/sofa-set.jpg"
-        },
-        {
-            id: 7,
-            name: "Luxury Armchair Pair",
-            price: 1899,
-            category: "Living Room",
-            image: "images/luxury-armchairs.jpg"
-        },
-        {
-            id: 8,
-            name: "Modern Mustard Lounge Chair",
-            price: 899,
-            category: "Living Room",
-            image: "images/modern-yellow-chair.jpg"
-        },
-        {
-            id: 9,
-            name: "Minimalist Grey Sofa",
-            price: 2199,
-            category: "Living Room",
-            image: "images/minimalist-sofa.jpg"
-        },
-        {
-            id: 10,
-            name: "Modern Two-Tone Sofa",
-            price: 2599,
-            category: "Living Room",
-            image: "images/modern-grey-sofa.jpg"
-        },
-        {
-            id: 11,
-            name: "Curved Luxury Sofa",
-            price: 3499,
-            category: "Living Room",
-            image: "images/curved-luxury-sofa.jpg"
+            id: 4,
+            name: "Ceramic Vase Set",
+            price: 89,
+            category: "Decor",
+            image: "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?q=80&w=1000&auto=format&fit=crop"
         }
     ]
 };
