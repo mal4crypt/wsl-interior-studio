@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Sign Up | WSL Interior Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">WSL STUDIO</a>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                </div>
+                <div class="nav-icons">
+                    <a href="#"><i class="fas fa-search"></i></a>
+                    <a href="login.html" class="user-icon active"><i class="fas fa-user"></i></a>
+                    <a href="cart.html" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                    <div class="mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Auth Section -->
+    <section style="padding: 5rem 0; min-height: 80vh; display: flex; align-items: center;">
+        <div class="container">
+            <div class="auth-container">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+                    <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form" class="auth-form active" onsubmit="handleLogin(event)">
+                    <h2 style="margin-bottom: 1.5rem; text-align: center;">Welcome Back</h2>
+                    <div class="form-group">
+                        <label for="login-email">Email Address</label>
+                        <input type="email" id="login-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <div style="text-align: right; margin-bottom: 1.5rem;">
+                        <a href="#" onclick="showForgotPassword(event)"
+                            style="font-size: 0.9rem; color: var(--accent-color);">Forgot Password?</a>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">Sign In</button>
+                </form>
+
+                <!-- Signup Form -->
+                <form id="signup-form" class="auth-form" onsubmit="handleSignup(event)">
+                    <h2 style="margin-bottom: 1.5rem; text-align: center;">Create Account</h2>
+                    <div class="form-group">
+                        <label for="signup-name">Full Name</label>
+                        <input type="text" id="signup-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email">Email Address</label>
+                        <input type="email" id="signup-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-confirm">Confirm Password</label>
+                        <input type="password" id="signup-confirm" required>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">Create Account</button>
+                </form>
+
+                <!-- Forgot Password Modal (Hidden by default) -->
+                <div id="forgot-password-modal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <span class="close-modal" onclick="closeForgotPassword()">&times;</span>
+                        <h2>Reset Password</h2>
+                        <p style="margin-bottom: 1.5rem; color: var(--light-text);">Enter your email address and we'll
+                            send you a link to reset your password.</p>
+                        <form onsubmit="handleForgotPassword(event)">
+                            <div class="form-group">
+                                <label for="reset-email">Email Address</label>
+                                <input type="email" id="reset-email" required>
+                            </div>
+                            <button type="submit" class="btn" style="width: 100%;">Send Reset Link</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>WSL STUDIO</h4>
+                    <p>Premium interior design solutions for the modern lifestyle.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="shop.html">Shop</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> mailwaro.online@gmail.com</li>
+                        <li><i class="fas fa-phone"></i> +234 901 088 3999</li>
+                        <li><i class="fab fa-whatsapp"></i> +234 901 088 3999</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Gwarinpa, 900108, FCT Nigeria</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 WSL Interior Studio. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
