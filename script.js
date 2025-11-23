@@ -57,6 +57,13 @@ const state = {
             price: 899,
             category: "Living Room",
             image: "images/modern-yellow-chair.jpg"
+        },
+        {
+            id: 9,
+            name: "Minimalist Grey Sofa",
+            price: 2199,
+            category: "Living Room",
+            image: "images/minimalist-sofa.jpg"
         }
     ]
 };
