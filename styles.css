@@ -240,6 +240,47 @@ nav {
     color: var(--accent-color);
 }
 
+.btn-social {
+    width: 100%;
+    padding: 0.8rem;
+    margin-bottom: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    font-family: var(--font-main);
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-social:hover {
+    background-color: #f5f5f5;
+}
+
+.btn-social.google {
+    color: #db4437;
+    border-color: #db4437;
+}
+
+.btn-social.facebook {
+    color: #4267B2;
+    border-color: #4267B2;
+}
+
+.btn-social.google:hover {
+    background-color: #db4437;
+    color: white;
+}
+
+.btn-social.facebook:hover {
+    background-color: #4267B2;
+    color: white;
+}
+
 /* Hero Section */
 .hero {
     height: 80vh;
