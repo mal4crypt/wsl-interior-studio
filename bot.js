@@ -3,10 +3,11 @@
 const botState = {
     isOpen: false,
     chatHistory: [],
-    step: 'idle', // idle, recording_transaction, messaging_admin, guided_discovery, price_negotiation, problem_reporting, payment_shipping
+    step: 'idle', // idle, recording_transaction, messaging_admin, guided_discovery, price_negotiation, problem_reporting, payment_shipping, human_escalation, order_tracking
     data: {}, // Generic data holder for multi-step flows
     position: JSON.parse(localStorage.getItem('botPosition')) || null, // {x, y}
-    isDragging: false
+    isDragging: false,
+    userPreferences: JSON.parse(localStorage.getItem('botUserPreferences')) || {} // Store user preferences
 };
 
 // Helper function to check if bot recording is enabled
@@ -84,6 +85,18 @@ const intents = [
     {
         keywords: ['bye', 'goodbye', 'see you', 'later'],
         response: "Thank you for chatting with me! Feel free to reach out anytime. Have a wonderful day! 👋"
+    },
+    {
+        keywords: ['human', 'agent', 'talk to someone', 'speak to person', 'real person', 'representative'],
+        response: "I understand you'd like to speak with a human agent. Let me connect you!"
+    },
+    {
+        keywords: ['track', 'order status', 'where is my order', 'tracking', 'delivery status'],
+        response: "I can help you track your order! Please provide your order ID or transaction number."
+    },
+    {
+        keywords: ['recommend', 'suggest', 'what should i buy', 'help me choose', 'best for me'],
+        response: "I'd love to help you find the perfect item! Let me ask you a few questions."
     },
     // Category-based intents
     {
@@ -481,6 +494,14 @@ function processMessage(text) {
         handlePaymentShippingStep(text);
         return;
     }
+    if (botState.step === 'human_escalation') {
+        handleHumanEscalationStep(text);
+        return;
+    }
+    if (botState.step === 'order_tracking') {
+        handleOrderTrackingStep(text);
+        return;
+    }
 
     // 2. Navigation Intents
     if (lowerText.includes('where is') || lowerText.includes('go to') || lowerText.includes('navigate to') || lowerText.includes('show me')) {
@@ -572,7 +593,23 @@ function processMessage(text) {
         return;
     }
 
-    // 7. Trigger Existing Flows
+    // 7. Human Agent Escalation (NEW)
+    if (lowerText.includes('human') || lowerText.includes('agent') || lowerText.includes('talk to someone') || lowerText.includes('speak to person') || lowerText.includes('real person')) {
+        botState.step = 'human_escalation';
+        botState.data = { step: 0 };
+        addMessage("I understand you'd like to speak with a human agent. Let me collect some information to connect you. What is your **Name**?", 'bot');
+        return;
+    }
+
+    // 8. Order Tracking (NEW)
+    if (lowerText.includes('track') || lowerText.includes('order status') || lowerText.includes('where is my order') || lowerText.includes('tracking')) {
+        botState.step = 'order_tracking';
+        botState.data = { step: 0 };
+        addMessage("I can help you track your order! Please provide your **Order ID** or **Transaction Number**.", 'bot');
+        return;
+    }
+
+    // 9. Trigger Existing Flows
     if (lowerText.includes('record transaction') || lowerText.includes('new sale')) {
         botState.step = 'recording_transaction';
         botState.data = { step: 0 };
@@ -587,10 +624,17 @@ function processMessage(text) {
         return;
     }
 
-    if (lowerText.includes('choose') || lowerText.includes('unsure') || lowerText.includes('recommend') || lowerText.includes('help me find')) {
+    if (lowerText.includes('choose') || lowerText.includes('unsure') || lowerText.includes('recommend') || lowerText.includes('help me find') || lowerText.includes('suggest') || lowerText.includes('what should i buy')) {
         botState.step = 'guided_discovery';
         botState.data = { step: 0 };
-        addMessage("I can help you find the perfect item! First, which **Room** are you furnishing? (e.g., Living Room, Dining, Bedroom)", 'bot');
+        // Check if user has previous preferences
+        const currentUser = window.state && window.state.currentUser;
+        if (currentUser && botState.userPreferences[currentUser.email]) {
+            const prefs = botState.userPreferences[currentUser.email];
+            addMessage(`Welcome back! I remember you were interested in **${prefs.category || 'furniture'}**. Would you like similar recommendations, or are you looking for something different today? (Type 'similar' or 'different')`, 'bot');
+        } else {
+            addMessage("I can help you find the perfect item! First, which **Room** are you furnishing? (e.g., Living Room, Dining, Bedroom)", 'bot');
+        }
         return;
     }
 
@@ -999,6 +1043,134 @@ function handlePaymentShippingStep(text) {
             }
 
             addMessage(`Perfect! Your payment and shipping details have been recorded.<br><br>**Summary:**<br>• Payment: ${data.paymentMethod} - $${data.paymentAmount}<br>• Reference: ${data.paymentReference}<br>• Delivery to: ${data.shippingAddress}<br>• Contact: ${data.shippingPhone}<br><br>Our admin will confirm and process your order shortly. Thank you!`, 'bot');
+            botState.step = 'idle';
+            botState.data = {};
+            break;
+    }
+}
+
+// Human Escalation Handler
+function handleHumanEscalationStep(text) {
+    const data = botState.data;
+
+    switch (data.step) {
+        case 0: // Name
+            data.customerName = text;
+            data.step++;
+            addMessage("Thanks! What is your **Email or Phone** so our team can reach you?", 'bot');
+            break;
+
+        case 1: // Contact
+            data.customerContact = text;
+            data.step++;
+            addMessage("Got it. Please briefly describe **what you need help with** so I can route you to the right person.", 'bot');
+            break;
+
+        case 2: // Issue description
+            data.issueDescription = text;
+
+            // Create escalation request
+            if (isBotRecordingEnabled()) {
+                const escalationRequest = {
+                    id: Date.now(),
+                    date: new Date().toLocaleDateString(),
+                    type: 'Human Agent Request',
+                    sender: data.customerName,
+                    contact: data.customerContact,
+                    message: `Customer requests human agent assistance:<br><br>${data.issueDescription}`,
+                    priority: 'High',
+                    status: 'Pending Agent Response',
+                    read: false
+                };
+
+                let messages = JSON.parse(localStorage.getItem('botMessages')) || [];
+                messages.unshift(escalationRequest);
+                localStorage.setItem('botMessages', JSON.stringify(messages));
+            }
+
+            addMessage(`Thank you, ${data.customerName}! I've escalated your request to our human support team. They will contact you at **${data.customerContact}** within 24 hours. Is there anything else I can help you with in the meantime?`, 'bot');
+            botState.step = 'idle';
+            botState.data = {};
+            break;
+    }
+}
+
+// Order Tracking Handler
+function handleOrderTrackingStep(text) {
+    const data = botState.data;
+
+    switch (data.step) {
+        case 0: // Order ID
+            const orderId = text.trim();
+
+            // Search for order in transactions
+            const transactions = (window.state && window.state.transactions) ? window.state.transactions : [];
+            const order = transactions.find(t =>
+                t.id.toString() === orderId ||
+                (t.property && t.property.toLowerCase().includes(orderId.toLowerCase()))
+            );
+
+            if (order) {
+                const statusEmoji = order.status === 'Completed' ? '✅' : '⏳';
+                addMessage(`${statusEmoji} **Order Found!**<br><br>**Order ID**: ${order.id}<br>**Date**: ${order.date}<br>**Item**: ${order.property}<br>**Status**: ${order.status}<br>**Client**: ${order.clientName}<br><br>${order.status === 'Pending' ? 'Your order is being processed. You\'ll receive an update within 24-48 hours.' : 'Your order has been completed! Thank you for your purchase.'}`, 'bot');
+            } else {
+                addMessage(`I couldn't find an order with ID "${orderId}". Please double-check your order number, or type 'talk to human' to speak with our support team for assistance.`, 'bot');
+            }
+
+            botState.step = 'idle';
+            botState.data = {};
+            break;
+    }
+}
+
+// Enhanced Guided Discovery with Preference Memory
+function handleDiscoveryStep(text) {
+    const data = botState.data;
+    const lowerText = text.toLowerCase();
+    const currentUser = window.state && window.state.currentUser;
+
+    switch (data.step) {
+        case 0: // Room or Similar/Different choice
+            if (lowerText.includes('similar')) {
+                // Use previous preferences
+                const prefs = botState.userPreferences[currentUser.email];
+                data.category = prefs.category;
+                data.step = 2; // Skip to showing recommendations
+                addMessage(`Great! Here are some ${data.category} items similar to what you liked before:`, 'bot');
+                recommendProducts(data.category);
+                botState.step = 'idle';
+                botState.data = {};
+                return;
+            } else if (lowerText.includes('different')) {
+                // Start fresh
+                addMessage("No problem! Which **Room** are you furnishing? (e.g., Living Room, Dining, Bedroom)", 'bot');
+                data.step = 1;
+                return;
+            }
+
+            // New user or direct room input
+            if (lowerText.includes('living')) data.category = 'Living Room';
+            else if (lowerText.includes('dining')) data.category = 'Dining';
+            else if (lowerText.includes('bed')) data.category = 'Bedroom';
+            else if (lowerText.includes('light')) data.category = 'Lighting';
+            else data.category = 'Decor';
+
+            // Save preference
+            if (currentUser) {
+                if (!botState.userPreferences[currentUser.email]) {
+                    botState.userPreferences[currentUser.email] = {};
+                }
+                botState.userPreferences[currentUser.email].category = data.category;
+                localStorage.setItem('botUserPreferences', JSON.stringify(botState.userPreferences));
+            }
+
+            data.step++;
+            addMessage(`Great! For the ${data.category}, what is your budget range? (e.g., "under 500", "no limit")`, 'bot');
+            break;
+
+        case 1: // Budget
+            addMessage(`Understood. Here are some top picks for your ${data.category}:`, 'bot');
+            recommendProducts(data.category);
             botState.step = 'idle';
             botState.data = {};
             break;
