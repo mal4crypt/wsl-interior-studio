@@ -395,6 +395,21 @@ nav {
     gap: 2rem;
 }
 
+.horizontal-scroll-grid {
+    display: flex;
+    overflow-x: auto;
+    gap: 2rem;
+    padding-bottom: 2rem;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+
+.horizontal-scroll-grid .product-card {
+    flex: 0 0 300px;
+    /* Fixed width for horizontal scroll items */
+    scroll-snap-align: start;
+}
+
 .product-card {
     background: var(--white);
     border-radius: 8px;
