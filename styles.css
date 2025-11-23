@@ -155,129 +155,127 @@ nav {
     background-color: var(--accent-color);
     color: var(--white);
     font-size: 0.7rem;
-    width: 18px;
-
-    /* Dark Auth Page Styles */
-    .dark-auth-page {
-        background-color: #121212;
-        color: #ffffff;
-        font-family: 'Inter', sans-serif;
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: 0;
-    }
-
-    .auth-wrapper {
-        width: 100%;
-        max-width: 450px;
-        padding: 2rem;
-        text-align: center;
-    }
-
-    .auth-header {
-        margin-bottom: 3rem;
-    }
-
-    .auth-header h1 {
-        font-family: 'Playfair Display', serif;
-        font-size: 2.5rem;
-        margin-bottom: 0.5rem;
-        color: #ffffff;
-        letter-spacing: 1px;
-    }
-
-    .auth-header p {
-        color: #888;
-        font-size: 0.9rem;
-        letter-spacing: 3px;
-        text-transform: uppercase;
-    }
-
-    .auth-card {
-        background-color: #1e1e1e;
-        padding: 2.5rem;
-        border-radius: 8px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    }
-
-    .dark-auth-page .form-group input {
-        background-color: #2d2d2d;
-        border: 1px solid #333;
-        color: #fff;
-        padding: 1rem;
-        border-radius: 4px;
-        width: 100%;
-        margin-bottom: 1rem;
-        font-size: 1rem;
-    }
-
-    .dark-auth-page .form-group input:focus {
-        border-color: #d4af37;
-        outline: none;
-    }
-
-    .btn-gold {
-        background-color: #d4af37;
-        color: #000;
-        font-weight: 600;
-        width: 100%;
-        padding: 1rem;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 1rem;
-        transition: background-color 0.3s;
-        margin-top: 1rem;
-    }
-
-    .btn-gold:hover {
-        background-color: #c5a028;
-    }
-
-    .auth-links {
-        margin-top: 1.5rem;
-        font-size: 0.9rem;
-        color: #888;
-    }
-
-    .auth-links a {
-        color: #d4af37;
-        text-decoration: none;
-        transition: color 0.3s;
-    }
-
-    .auth-links a:hover {
-        color: #fff;
-    }
-
-    .forgot-link {
-        display: block;
-        margin-top: 0.5rem;
-        font-size: 0.85rem;
-    }
-
-    /* Dark Modal */
-    .dark-modal {
-        background-color: #1e1e1e;
-        color: #fff;
-        border: 1px solid #333;
-    }
-
-    .dark-modal h2 {
-        color: #fff;
-    }
-
-    .dark-modal p {
-        color: #aaa !important;
-    }
-
     height: 18px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Dark Auth Page Styles */
+.dark-auth-page {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
+.auth-wrapper {
+    width: 100%;
+    max-width: 450px;
+    padding: 2rem;
+    text-align: center;
+}
+
+.auth-header {
+    margin-bottom: 3rem;
+}
+
+.auth-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: #ffffff;
+    letter-spacing: 1px;
+}
+
+.auth-header p {
+    color: #888;
+    font-size: 0.9rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.auth-card {
+    background-color: #1e1e1e;
+    padding: 2.5rem;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.dark-auth-page .form-group input {
+    background-color: #2d2d2d;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 1rem;
+    border-radius: 4px;
+    width: 100%;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.dark-auth-page .form-group input:focus {
+    border-color: #d4af37;
+    outline: none;
+}
+
+.btn-gold {
+    background-color: #d4af37;
+    color: #000;
+    font-weight: 600;
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+    margin-top: 1rem;
+}
+
+.btn-gold:hover {
+    background-color: #c5a028;
+}
+
+.auth-links {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: #888;
+}
+
+.auth-links a {
+    color: #d4af37;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.auth-links a:hover {
+    color: #fff;
+}
+
+.forgot-link {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+}
+
+/* Dark Modal */
+.dark-modal {
+    background-color: #1e1e1e;
+    color: #fff;
+    border: 1px solid #333;
+}
+
+.dark-modal h2 {
+    color: #fff;
+}
+
+.dark-modal p {
+    color: #aaa !important;
 }
 
 /* Hero Section */
