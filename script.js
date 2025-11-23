@@ -164,11 +164,8 @@ function loginUser(email) {
     state.currentUser = { email: email, isAdmin: ADMIN_EMAILS.includes(email) };
     saveUser();
 
-    if (state.currentUser.isAdmin) {
-        window.location.href = 'admin.html';
-    } else {
-        window.location.href = 'index.html';
-    }
+    // User requested to be taken to the home page for both clients and admins
+    window.location.href = 'index.html';
 }
 
 function logoutUser() {
@@ -185,12 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const userIcon = document.querySelector('.user-icon');
     if (userIcon && state.currentUser) {
         userIcon.innerHTML = `<i class="fas fa-user-check" title="${state.currentUser.email}"></i>`;
+        // Admin can still access dashboard via this icon
         userIcon.href = state.currentUser.isAdmin ? 'admin.html' : '#';
-
-        // Add logout option if needed, for now just linking to admin or profile
-        if (state.currentUser.isAdmin) {
-            // Maybe add a logout button somewhere or handle it in the profile page
-        }
     }
 
     // Auth Logic (Only if on login page)
@@ -224,15 +217,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Mock signup
-                alert(`Account created successfully for ${name}! Please sign in.`);
-                // For simplicity, just switch view, user still needs to login
-                if (typeof switchAuthView === 'function') {
-                    switchAuthView('login');
-                } else {
-                    // Fallback if function not available
-                    window.location.reload();
-                }
+                // Mock signup and auto-login
+                alert(`Account created successfully for ${name}! Logging you in...`);
+                loginUser(email);
             }
         };
     }
