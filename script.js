@@ -1,44 +1,101 @@
 // State Management
+const defaultProducts = [
+    {
+        id: 1,
+        name: "Modern Velvet Sofa",
+        price: 1299,
+        category: "Living Room",
+        image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1000&auto=format&fit=crop"
+    },
+    {
+        id: 2,
+        name: "Minimalist Wooden Table",
+        price: 499,
+        category: "Dining",
+        image: "https://images.unsplash.com/photo-1530018607912-eff2daa1bac4?q=80&w=1000&auto=format&fit=crop"
+    },
+    {
+        id: 3,
+        name: "Industrial Pendant Light",
+        price: 199,
+        category: "Lighting",
+        image: "https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?q=80&w=1000&auto=format&fit=crop"
+    },
+    {
+        id: 4,
+        name: "Ceramic Vase Set",
+        price: 89,
+        category: "Decor",
+        image: "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?q=80&w=1000&auto=format&fit=crop"
+    },
+    {
+        id: 5,
+        name: "Luxury Dining Set",
+        price: 2499,
+        category: "Dining",
+        image: "images/dining-set.jpg"
+    },
+    {
+        id: 6,
+        name: "Contemporary Sofa Suite",
+        price: 3299,
+        category: "Living Room",
+        image: "images/sofa-set.jpg"
+    },
+    {
+        id: 7,
+        name: "Luxury Armchair Pair",
+        price: 1599,
+        category: "Living Room",
+        image: "images/luxury-armchairs.jpg"
+    },
+    {
+        id: 8,
+        name: "Modern Mustard Lounge Chair",
+        price: 799,
+        category: "Living Room",
+        image: "images/modern-yellow-chair.jpg"
+    },
+    {
+        id: 9,
+        name: "Minimalist Grey Sofa",
+        price: 1899,
+        category: "Living Room",
+        image: "images/minimalist-sofa.jpg"
+    },
+    {
+        id: 10,
+        name: "Modern Two-Tone Sofa",
+        price: 2199,
+        category: "Living Room",
+        image: "images/modern-grey-sofa.jpg"
+    },
+    {
+        id: 11,
+        name: "Curved Luxury Sofa",
+        price: 2899,
+        category: "Living Room",
+        image: "images/curved-luxury-sofa.jpg"
+    }
+];
+
+const defaultContactInfo = {
+    email: "mailwaro.online@gmail.com",
+    phone: "+234 901 088 3999",
+    whatsapp: "+234 901 088 3999",
+    address: "Gwarinpa, 900108, FCT Nigeria"
+};
+
 const state = {
     cart: JSON.parse(localStorage.getItem('cart')) || [],
-    products: [
-        {
-            id: 1,
-            name: "Modern Velvet Sofa",
-            price: 1299,
-            category: "Living Room",
-            image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1000&auto=format&fit=crop"
-        },
-        {
-            id: 2,
-            name: "Minimalist Wooden Table",
-            price: 499,
-            category: "Dining",
-            image: "https://images.unsplash.com/photo-1530018607912-eff2daa1bac4?q=80&w=1000&auto=format&fit=crop"
-        },
-        {
-            id: 3,
-            name: "Industrial Pendant Light",
-            price: 199,
-            category: "Lighting",
-            image: "https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?q=80&w=1000&auto=format&fit=crop"
-        },
-        {
-            id: 4,
-            name: "Ceramic Vase Set",
-            price: 89,
-            category: "Decor",
-            image: "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?q=80&w=1000&auto=format&fit=crop"
-        },
-        {
-            id: 4,
-            name: "Ceramic Vase Set",
-            price: 89,
-            category: "Decor",
-            image: "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?q=80&w=1000&auto=format&fit=crop"
-        }
-    ]
+    products: JSON.parse(localStorage.getItem('products')) || defaultProducts,
+    contactInfo: JSON.parse(localStorage.getItem('contactInfo')) || defaultContactInfo,
+    transactions: JSON.parse(localStorage.getItem('transactions')) || [],
+    currentUser: JSON.parse(localStorage.getItem('currentUser')) || null
 };
+
+// Admin Emails
+const ADMIN_EMAILS = ['mal4crypt404@gmail.com', 'mailwaro.online@gmail.com'];
 
 // DOM Elements
 const cartCount = document.querySelector('.cart-count');
@@ -52,6 +109,12 @@ function updateCartCount() {
 }
 
 function addToCart(productId) {
+    if (!state.currentUser) {
+        alert("Please sign in to add items to your cart.");
+        window.location.href = 'login.html';
+        return;
+    }
+
     const product = state.products.find(p => p.id === productId);
     if (!product) return;
 
@@ -74,6 +137,22 @@ function saveCart() {
     localStorage.setItem('cart', JSON.stringify(state.cart));
 }
 
+function saveProducts() {
+    localStorage.setItem('products', JSON.stringify(state.products));
+}
+
+function saveContactInfo() {
+    localStorage.setItem('contactInfo', JSON.stringify(state.contactInfo));
+}
+
+function saveTransactions() {
+    localStorage.setItem('transactions', JSON.stringify(state.transactions));
+}
+
+function saveUser() {
+    localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
+}
+
 function formatPrice(price) {
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
@@ -81,59 +160,81 @@ function formatPrice(price) {
     }).format(price);
 }
 
+function loginUser(email) {
+    state.currentUser = { email: email, isAdmin: ADMIN_EMAILS.includes(email) };
+    saveUser();
+
+    if (state.currentUser.isAdmin) {
+        window.location.href = 'admin.html';
+    } else {
+        window.location.href = 'index.html';
+    }
+}
+
+function logoutUser() {
+    state.currentUser = null;
+    localStorage.removeItem('currentUser');
+    window.location.href = 'index.html';
+}
+
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
     updateCartCount();
 
-    // Auth Logic
-    function switchAuthView(view) {
-        const loginView = document.getElementById('login-view');
-        const signupView = document.getElementById('signup-view');
+    // Update User Icon if logged in
+    const userIcon = document.querySelector('.user-icon');
+    if (userIcon && state.currentUser) {
+        userIcon.innerHTML = `<i class="fas fa-user-check" title="${state.currentUser.email}"></i>`;
+        userIcon.href = state.currentUser.isAdmin ? 'admin.html' : '#';
 
-        if (loginView && signupView) { // Check if elements exist
-            if (view === 'login') {
-                loginView.style.display = 'block';
-                signupView.style.display = 'none';
-            } else {
-                loginView.style.display = 'none';
-                signupView.style.display = 'block';
-            }
+        // Add logout option if needed, for now just linking to admin or profile
+        if (state.currentUser.isAdmin) {
+            // Maybe add a logout button somewhere or handle it in the profile page
         }
     }
 
-    function handleLogin(e) {
-        e.preventDefault();
-        const emailInput = document.getElementById('login-email');
-        if (emailInput) {
-            const email = emailInput.value;
-            // Mock login
-            alert(`Successfully logged in as ${email}`);
-            window.location.href = 'index.html';
-        }
-    }
-
-    function handleSignup(e) {
-        e.preventDefault();
-        const nameInput = document.getElementById('signup-name');
-        const emailInput = document.getElementById('signup-email');
-        const passwordInput = document.getElementById('signup-password');
-        const confirmInput = document.getElementById('signup-confirm');
-
-        if (nameInput && emailInput && passwordInput && confirmInput) {
-            const name = nameInput.value;
-            const email = emailInput.value;
-            const password = passwordInput.value;
-            const confirm = confirmInput.value;
-
-            if (password !== confirm) {
-                alert('Passwords do not match!');
-                return;
+    // Auth Logic (Only if on login page)
+    if (document.getElementById('login-view')) {
+        window.handleLogin = function (e) {
+            e.preventDefault();
+            const emailInput = document.getElementById('login-email');
+            if (emailInput) {
+                const email = emailInput.value;
+                // Mock login
+                alert(`Successfully logged in as ${email}`);
+                loginUser(email);
             }
+        };
 
-            // Mock signup
-            alert(`Account created successfully for ${name}! Please sign in.`);
-            switchAuthView('login');
-        }
+        window.handleSignup = function (e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('signup-name');
+            const emailInput = document.getElementById('signup-email');
+            const passwordInput = document.getElementById('signup-password');
+            const confirmInput = document.getElementById('signup-confirm');
+
+            if (nameInput && emailInput && passwordInput && confirmInput) {
+                const name = nameInput.value;
+                const email = emailInput.value;
+                const password = passwordInput.value;
+                const confirm = confirmInput.value;
+
+                if (password !== confirm) {
+                    alert('Passwords do not match!');
+                    return;
+                }
+
+                // Mock signup
+                alert(`Account created successfully for ${name}! Please sign in.`);
+                // For simplicity, just switch view, user still needs to login
+                if (typeof switchAuthView === 'function') {
+                    switchAuthView('login');
+                } else {
+                    // Fallback if function not available
+                    window.location.reload();
+                }
+            }
+        };
     }
 
     // Mobile Menu Logic
@@ -152,5 +253,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 icon.classList.add('fa-bars');
             }
         });
+    }
+
+    // Inject Contact Info (Footer)
+    const footerEmail = document.querySelector('.footer-col li:nth-child(1)');
+    const footerPhone = document.querySelector('.footer-col li:nth-child(2)');
+    const footerWhatsapp = document.querySelector('.footer-col li:nth-child(3)');
+    const footerAddress = document.querySelector('.footer-col li:nth-child(4)');
+
+    if (footerEmail && state.contactInfo) {
+        footerEmail.innerHTML = `<i class="fas fa-envelope"></i> ${state.contactInfo.email}`;
+        footerPhone.innerHTML = `<i class="fas fa-phone"></i> ${state.contactInfo.phone}`;
+        footerWhatsapp.innerHTML = `<i class="fab fa-whatsapp"></i> ${state.contactInfo.whatsapp}`;
+        footerAddress.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${state.contactInfo.address}`;
     }
 });
