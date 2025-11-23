@@ -47,21 +47,21 @@
                     <h3 style="margin-bottom: 1.5rem;">Shipping Information</h3>
                     <form id="checkout-form" onsubmit="handleCheckout(event)">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                            <input type="text" placeholder="First Name" required
+                            <input type="text" id="first-name" placeholder="First Name" required
                                 style="padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
-                            <input type="text" placeholder="Last Name" required
+                            <input type="text" id="last-name" placeholder="Last Name" required
                                 style="padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
-                        <input type="email" placeholder="Email Address" required
+                        <input type="email" id="email" placeholder="Email Address" required
                             style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 1rem;">
-                        <input type="text" placeholder="Address" required
+                        <input type="text" id="address" placeholder="Address" required
                             style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 1rem;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
-                            <input type="text" placeholder="City" required
+                            <input type="text" id="city" placeholder="City" required
                                 style="padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
-                            <input type="text" placeholder="State" required
+                            <input type="text" id="state" placeholder="State" required
                                 style="padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
-                            <input type="text" placeholder="ZIP Code" required
+                            <input type="text" id="zip" placeholder="ZIP Code" required
                                 style="padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
                         </div>
 
@@ -71,12 +71,12 @@
                             <div style="margin-bottom: 1rem;">
                                 <i class="far fa-credit-card" style="margin-right: 0.5rem;"></i> Credit Card
                             </div>
-                            <input type="text" placeholder="Card Number" required
+                            <input type="text" id="card-number" placeholder="Card Number" required
                                 style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 1rem;">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <input type="text" placeholder="MM/YY" required
+                                <input type="text" id="card-expiry" placeholder="MM/YY" required
                                     style="padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
-                                <input type="text" placeholder="CVC" required
+                                <input type="text" id="card-cvc" placeholder="CVC" required
                                     style="padding: 1rem; border: 1px solid #ddd; border-radius: 4px;">
                             </div>
                         </div>
@@ -133,9 +133,53 @@
 
         function handleCheckout(e) {
             e.preventDefault();
-            alert('Order placed successfully! Thank you for shopping with WSL Studio.');
+
+            // Collect form data
+            const firstName = document.getElementById('first-name').value;
+            const lastName = document.getElementById('last-name').value;
+            const email = document.getElementById('email').value;
+            const address = document.getElementById('address').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const zip = document.getElementById('zip').value;
+            const cardNumber = document.getElementById('card-number').value;
+
+            // Calculate total
+            let total = 0;
+            const itemsList = state.cart.map(item => {
+                total += item.price * item.quantity;
+                return `${item.name} x${item.quantity}`;
+            }).join(', ');
+
+            // Create transaction record
+            const transaction = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString(),
+                clientName: `${firstName} ${lastName}`,
+                clientContact: email,
+                property: itemsList,
+                amount: total,
+                paymentMethod: 'Credit Card',
+                cardLast4: cardNumber.slice(-4),
+                shippingAddress: `${address}, ${city}, ${state} ${zip}`,
+                status: 'Completed',
+                receipt: `AUTO-${Date.now()}`
+            };
+
+            // Save to transactions
+            if (window.state && window.state.transactions) {
+                window.state.transactions.unshift(transaction);
+                localStorage.setItem('transactions', JSON.stringify(window.state.transactions));
+            }
+
+            // Clear cart
             state.cart = [];
             saveCart();
+
+            // Show success message
+            alert(`Order placed successfully!\n\nOrder ID: ${transaction.id}\nTotal: $${total.toFixed(2)}\n\nYou can track your order using the bot by typing "track my order" and providing your Order ID.\n\nThank you for shopping with WSL Studio!`);
+
+            // Redirect to home
             window.location.href = 'index.html';
         }
     </script>
