@@ -246,8 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // User Dropdown Logic
     const userIcon = document.querySelector('.user-icon');
-    if (userIcon && state.currentUser) {
-        // Replace icon with dropdown trigger
+    if (userIcon) {
+        // Replace icon with dropdown trigger container
         const container = document.createElement('div');
         container.className = 'user-dropdown-container';
         container.style.position = 'relative';
@@ -256,32 +256,53 @@ document.addEventListener('DOMContentLoaded', () => {
         userIcon.parentNode.replaceChild(container, userIcon);
         container.appendChild(userIcon);
 
-        userIcon.innerHTML = `<i class="fas fa-user-circle" style="font-size: 1.2rem;"></i>`;
-        userIcon.href = '#';
+        // Update Icon Appearance
+        if (state.currentUser) {
+            userIcon.innerHTML = `<i class="fas fa-user-circle" style="font-size: 1.2rem;"></i>`;
+            userIcon.title = state.currentUser.name;
+        } else {
+            userIcon.innerHTML = `<i class="fas fa-user" style="font-size: 1.2rem;"></i>`;
+        }
+        userIcon.href = '#'; // Prevent default navigation
 
         // Create Dropdown Menu
         const dropdown = document.createElement('div');
         dropdown.className = 'user-dropdown-menu';
-        dropdown.innerHTML = `
-            <div class="dropdown-header">
-                <strong>${state.currentUser.name}</strong><br>
-                <small>${state.currentUser.email}</small>
-            </div>
-            <ul class="dropdown-list">
-                <li><a href="#" onclick="showCartModal()"><i class="fas fa-shopping-cart"></i> See Cart List</a></li>
-                <li><a href="#" onclick="showNotifications()"><i class="fas fa-bell"></i> Notifications <span class="badge" id="notif-badge">${state.currentUser.notifications ? state.currentUser.notifications.length : 0}</span></a></li>
-                <li><a href="#" onclick="showHelp()"><i class="fas fa-question-circle"></i> Help / FAQ</a></li>
-                ${state.currentUser.isAdmin ? '<li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a></li>' : ''}
-                <li><a href="#" onclick="switchUser()"><i class="fas fa-users"></i> Switch User</a></li>
-                <li><a href="#" onclick="deleteAccount()" style="color: red;"><i class="fas fa-trash"></i> Delete Account</a></li>
-                <li><a href="#" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
-        `;
+
+        if (state.currentUser) {
+            // Logged In Menu
+            dropdown.innerHTML = `
+                <div class="dropdown-header">
+                    <strong>${state.currentUser.name}</strong><br>
+                    <small>${state.currentUser.email}</small>
+                </div>
+                <ul class="dropdown-list">
+                    <li><a href="#" onclick="showCartModal()"><i class="fas fa-shopping-cart"></i> See Cart List</a></li>
+                    <li><a href="#" onclick="showNotifications()"><i class="fas fa-bell"></i> Notifications <span class="badge" id="notif-badge">${state.currentUser.notifications ? state.currentUser.notifications.length : 0}</span></a></li>
+                    <li><a href="#" onclick="showHelp()"><i class="fas fa-question-circle"></i> Help / FAQ</a></li>
+                    ${state.currentUser.isAdmin ? '<li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a></li>' : ''}
+                    <li><a href="#" onclick="switchUser()"><i class="fas fa-users"></i> Switch User</a></li>
+                    <li><a href="#" onclick="deleteAccount()" style="color: red;"><i class="fas fa-trash"></i> Delete Account</a></li>
+                    <li><a href="#" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            `;
+        } else {
+            // Guest Menu
+            dropdown.innerHTML = `
+                <ul class="dropdown-list">
+                    <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> Sign In</a></li>
+                    <li><a href="login.html"><i class="fas fa-user-plus"></i> Sign Up</a></li>
+                    <li><a href="#" onclick="showHelp()"><i class="fas fa-question-circle"></i> Help / FAQ</a></li>
+                </ul>
+            `;
+        }
+
         container.appendChild(dropdown);
 
         // Toggle Dropdown
         userIcon.addEventListener('click', (e) => {
             e.preventDefault();
+            e.stopPropagation(); // Prevent immediate close
             dropdown.classList.toggle('active');
         });
 
@@ -293,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Inject "Admin" link if user is admin (Legacy request, keeping it)
-        if (state.currentUser.isAdmin) {
+        if (state.currentUser && state.currentUser.isAdmin) {
             const navLinks = document.querySelector('.nav-links');
             if (navLinks && !document.querySelector('.admin-link')) {
                 const adminLink = document.createElement('a');
