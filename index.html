@@ -177,8 +177,8 @@
         // Specific logic for Home Page
         document.addEventListener('DOMContentLoaded', () => {
             const grid = document.getElementById('featured-products-grid');
-            // Display first 4 products
-            state.products.slice(0, 4).forEach(product => {
+            // Display first 8 products for horizontal scrolling
+            state.products.slice(0, 8).forEach(product => {
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.innerHTML = `
