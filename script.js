@@ -182,8 +182,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const userIcon = document.querySelector('.user-icon');
     if (userIcon && state.currentUser) {
         userIcon.innerHTML = `<i class="fas fa-user-check" title="${state.currentUser.email}"></i>`;
-        // Admin can still access dashboard via this icon
-        userIcon.href = state.currentUser.isAdmin ? 'admin.html' : '#';
+        userIcon.href = '#'; // Keep as placeholder or link to profile if implemented
+
+        // Inject "Admin" link if user is admin
+        if (state.currentUser.isAdmin) {
+            const navLinks = document.querySelector('.nav-links');
+            if (navLinks) {
+                // Check if Admin link already exists to avoid duplicates
+                if (!document.querySelector('.admin-link')) {
+                    const adminLink = document.createElement('a');
+                    adminLink.href = 'admin.html';
+                    adminLink.textContent = 'Admin';
+                    adminLink.className = 'admin-link';
+                    adminLink.style.color = 'var(--primary-color)';
+                    adminLink.style.fontWeight = '600';
+
+                    // Insert after Contact link (last child usually)
+                    navLinks.appendChild(adminLink);
+                }
+            }
+        }
     }
 
     // Auth Logic (Only if on login page)
