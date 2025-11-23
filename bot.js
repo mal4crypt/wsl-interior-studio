@@ -97,19 +97,39 @@ function injectBotUI() {
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: var(--primary-color, #C19A6B);
+            background: linear-gradient(135deg, #C19A6B 0%, #8B7355 100%);
             color: white;
             border: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 24px rgba(193, 154, 107, 0.4), 0 4px 8px rgba(0,0,0,0.15);
             cursor: pointer;
-            font-size: 24px;
+            font-size: 26px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        #wsl-bot-bubble::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         #wsl-bot-bubble:hover {
-            transform: scale(1.1);
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 12px 32px rgba(193, 154, 107, 0.5), 0 6px 12px rgba(0,0,0,0.2);
+        }
+        #wsl-bot-bubble:hover::before {
+            opacity: 1;
+        }
+        #wsl-bot-bubble:active {
+            transform: scale(1.05);
         }
         #wsl-chat-window {
             position: absolute;
