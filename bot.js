@@ -67,7 +67,7 @@ function injectBotUI() {
                 <button id="close-chat">&times;</button>
             </div>
             <div id="chat-messages">
-                <div class="message bot">Hello! I'm WSL Bot. How can I assist you today?</div>
+                <div class="message bot">My name is WSL Bot, your personal assistant. How may I help you today?</div>
             </div>
             <div class="chat-input-area">
                 <input type="text" id="chat-input" placeholder="Type a message...">
