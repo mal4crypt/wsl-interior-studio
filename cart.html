@@ -125,7 +125,9 @@
             const subtotalEl = document.getElementById('subtotal');
             const totalEl = document.getElementById('total');
 
-            if (state.cart.length === 0) {
+            const cart = state.currentUser?.cart || [];
+
+            if (cart.length === 0) {
                 cartContainer.style.display = 'none';
                 emptyMsg.style.display = 'block';
                 return;
@@ -137,7 +139,7 @@
 
             let total = 0;
 
-            state.cart.forEach(item => {
+            cart.forEach(item => {
                 total += item.price * item.quantity;
 
                 const itemEl = document.createElement('div');
@@ -168,21 +170,44 @@
         }
 
         function updateQuantity(id, change) {
-            const item = state.cart.find(i => i.id === id);
+            const cart = state.currentUser?.cart || [];
+            const item = cart.find(i => i.id === id);
             if (item) {
                 item.quantity += change;
                 if (item.quantity <= 0) {
                     removeItem(id);
-                } else {
-                    saveCart();
-                    renderCart();
-                    updateCartCount();
+                    return;
                 }
+
+                // Update user's cart
+                if (state.currentUser) {
+                    const userIndex = state.users.findIndex(u => u.email === state.currentUser.email);
+                    if (userIndex !== -1) {
+                        state.users[userIndex].cart = cart;
+                        saveUsers();
+                        saveUser();
+                    }
+                }
+                saveCart();
+                renderCart();
+                updateCartCount();
             }
         }
 
         function removeItem(id) {
-            state.cart = state.cart.filter(i => i.id !== id);
+            const cart = state.currentUser?.cart || [];
+            const updatedCart = cart.filter(i => i.id !== id);
+
+            // Update user's cart
+            if (state.currentUser) {
+                const userIndex = state.users.findIndex(u => u.email === state.currentUser.email);
+                if (userIndex !== -1) {
+                    state.users[userIndex].cart = updatedCart;
+                    state.currentUser.cart = updatedCart;
+                    saveUsers();
+                    saveUser();
+                }
+            }
             saveCart();
             renderCart();
             updateCartCount();

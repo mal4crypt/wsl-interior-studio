@@ -112,12 +112,14 @@
             const totalEl = document.getElementById('checkout-total');
             let total = 0;
 
-            if (state.cart.length === 0) {
+            const cart = state.currentUser?.cart || [];
+
+            if (cart.length === 0) {
                 window.location.href = 'cart.html';
                 return;
             }
 
-            state.cart.forEach(item => {
+            cart.forEach(item => {
                 total += item.price * item.quantity;
                 const div = document.createElement('div');
                 div.style.cssText = 'display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 0.9rem;';
@@ -146,7 +148,8 @@
 
             // Calculate total
             let total = 0;
-            const itemsList = state.cart.map(item => {
+            const cart = state.currentUser?.cart || [];
+            const itemsList = cart.map(item => {
                 total += item.price * item.quantity;
                 return `${item.name} x${item.quantity}`;
             }).join(', ');
@@ -173,7 +176,15 @@
             }
 
             // Clear cart
-            state.cart = [];
+            if (state.currentUser) {
+                const userIndex = state.users.findIndex(u => u.email === state.currentUser.email);
+                if (userIndex !== -1) {
+                    state.users[userIndex].cart = [];
+                    state.currentUser.cart = [];
+                    saveUsers();
+                    saveUser();
+                }
+            }
             saveCart();
 
             // Show success message
