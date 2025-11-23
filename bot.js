@@ -130,7 +130,24 @@ function injectBotUI() {
             </div>
         </div>
         <button id="wsl-bot-bubble">
-            <i class="fas fa-robot"></i>
+            <svg viewBox="0 0 100 100" width="32" height="32" fill="white">
+                <!-- Robot head -->
+                <circle cx="50" cy="50" r="20" fill="white"/>
+                <!-- Eyes -->
+                <circle cx="43" cy="48" r="3" fill="#C19A6B"/>
+                <circle cx="57" cy="48" r="3" fill="#C19A6B"/>
+                <!-- Antenna -->
+                <line x1="50" y1="30" x2="50" y2="22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="50" cy="20" r="3" fill="white"/>
+                <!-- Chat bubble outline -->
+                <path d="M 30 45 Q 28 45 28 47 L 28 60 Q 28 62 30 62 L 35 62 L 38 67 L 38 62 L 45 62 Q 47 62 47 60 L 47 47 Q 47 45 45 45 Z" fill="white" opacity="0.3"/>
+                <path d="M 53 45 Q 55 45 55 47 L 55 60 Q 55 62 53 62 L 62 62 L 65 67 L 65 62 L 70 62 Q 72 62 72 60 L 72 47 Q 72 45 70 45 Z" fill="white" opacity="0.3"/>
+                <!-- Headphones -->
+                <path d="M 30 45 Q 30 35 35 35" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <circle cx="32" cy="48" r="4" fill="white"/>
+                <path d="M 70 45 Q 70 35 65 35" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <circle cx="68" cy="48" r="4" fill="white"/>
+            </svg>
         </button>
     `;
     document.body.appendChild(botContainer);
