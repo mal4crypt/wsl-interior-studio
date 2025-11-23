@@ -188,10 +188,12 @@
             saveCart();
 
             // Show success message
-            showToast(`Order placed successfully! Order ID: ${transaction.id}. You can track your order using the bot.`, 'success');
+            showNotification(`Order placed successfully! Order ID: ${transaction.id}`, 'success');
 
-            // Redirect to home
-            window.location.href = 'index.html';
+            // Redirect to home after delay
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
         }
     </script>
 </body>

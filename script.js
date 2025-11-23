@@ -101,38 +101,36 @@ const state = {
 // DOM Elements
 const cartCount = document.querySelector('.cart-count');
 
-// Toast Notification System
-function showToast(message, type = 'success') {
-    // Create container if it doesn't exist
-    let container = document.querySelector('.toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'toast-container';
-        document.body.appendChild(container);
-    }
+// Functions
+function showNotification(message, type = 'info') {
+    // Remove existing notification if any
+    const existing = document.querySelector('.toast-notification');
+    if (existing) existing.remove();
 
-    // Create toast
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
+    const notification = document.createElement('div');
+    notification.className = `toast-notification ${type}`;
 
-    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+    let icon = 'info-circle';
+    if (type === 'success') icon = 'check-circle';
+    if (type === 'error') icon = 'exclamation-circle';
 
-    toast.innerHTML = `
-        <span class="toast-icon">${icon}</span>
-        <span class="toast-message">${message}</span>
-        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+    notification.innerHTML = `
+        <i class="fas fa-${icon}"></i>
+        <span>${message}</span>
     `;
 
-    container.appendChild(toast);
+    document.body.appendChild(notification);
 
-    // Auto remove after 3 seconds
+    // Trigger animation
+    setTimeout(() => notification.classList.add('show'), 10);
+
+    // Remove after 3 seconds
     setTimeout(() => {
-        toast.classList.add('hiding');
-        setTimeout(() => toast.remove(), 300);
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
     }, 3000);
 }
 
-// Functions
 function updateCartCount() {
     if (cartCount) {
         let count = 0;
@@ -145,8 +143,8 @@ function updateCartCount() {
 
 function addToCart(productId) {
     if (!state.currentUser) {
-        showToast("Please sign in to add items to your cart.", 'info');
-        window.location.href = 'login.html';
+        showNotification("Please sign in to add items to your cart.", 'error');
+        setTimeout(() => window.location.href = 'login.html', 1500);
         return;
     }
 
@@ -175,7 +173,7 @@ function addToCart(productId) {
     updateCartCount();
 
     // Show feedback
-    showToast(`${product.name} added to cart!`);
+    showNotification(`${product.name} added to cart!`, 'success');
 }
 
 function saveUsers() {
@@ -208,7 +206,7 @@ function formatPrice(price) {
 function registerUser(name, email, password) {
     const existingUser = state.users.find(u => u.email === email);
     if (existingUser) {
-        showToast('User already exists with this email.', 'error');
+        showNotification('User already exists with this email.', 'error');
         return false;
     }
 
@@ -396,13 +394,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const confirm = confirmInput.value;
 
                 if (password !== confirm) {
-                    showToast('Passwords do not match!', 'error');
+                    showNotification('Passwords do not match!', 'error');
                     return;
                 }
 
                 if (registerUser(name, email, password)) {
-                    showToast(`Account created successfully! Welcome, ${name}!`, 'success');
-                    loginUser(email, password);
+                    showNotification(`Account created successfully for ${name}! Logging you in...`, 'success');
+                    setTimeout(() => {
+                        loginUser(email, password);
+                    }, 1500);
                 }
             }
         };
