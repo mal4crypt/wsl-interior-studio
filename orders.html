@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders | WSL Interior Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">WSL STUDIO</a>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                </div>
+                <div class="nav-icons">
+                    <a href="#"><i class="fas fa-search"></i></a>
+                    <a href="login.html" class="user-icon"><i class="fas fa-user"></i></a>
+                    <a href="cart.html" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                    <div class="mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Orders Section -->
+    <section style="padding: 4rem 0; min-height: 60vh;">
+        <div class="container">
+            <h1 style="margin-bottom: 2rem;">My Orders</h1>
+
+            <div id="orders-container">
+                <!-- Orders injected here -->
+            </div>
+
+            <div id="empty-orders-msg" style="display: none; text-align: center; padding: 4rem;">
+                <h2>No orders yet</h2>
+                <p style="margin: 1rem 0 2rem; color: var(--light-text);">You haven't placed any orders yet.</p>
+                <a href="shop.html" class="btn">Start Shopping</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>WSL STUDIO</h4>
+                    <p>Premium interior design solutions for the modern lifestyle.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="shop.html">Shop</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> mailwaro.online@gmail.com</li>
+                        <li><i class="fas fa-phone"></i> +234 901 088 3999</li>
+                        <li><i class="fab fa-whatsapp"></i> +234 901 088 3999</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Gwarinpa, 900108, FCT Nigeria</li>
+                        <li><a href="https://www.instagram.com/wslrealty?igsh=ejlheWszYzJ2b2pz" target="_blank"
+                                style="color: inherit;"><i class="fab fa-instagram"></i> @wslrealty</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 WSL Interior Studio. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="bot.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!state.currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const container = document.getElementById('orders-container');
+            const emptyMsg = document.getElementById('empty-orders-msg');
+
+            // Filter transactions for current user
+            const userOrders = state.transactions.filter(t =>
+                t.customer.email === state.currentUser.email
+            ).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (userOrders.length === 0) {
+                emptyMsg.style.display = 'block';
+                return;
+            }
+
+            userOrders.forEach(order => {
+                const date = new Date(order.date).toLocaleDateString();
+                const orderEl = document.createElement('div');
+                orderEl.style.cssText = 'background: white; border-radius: 8px; box-shadow: var(--shadow); padding: 1.5rem; margin-bottom: 2rem;';
+
+                let itemsHtml = order.items.map(item => `
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
+                        <img src="${item.image}" alt="${item.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+                        <div>
+                            <p style="font-weight: 500;">${item.name}</p>
+                            <p style="color: var(--light-text); font-size: 0.9rem;">Qty: ${item.quantity} x ${formatPrice(item.price)}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                orderEl.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div>
+                            <h3 style="font-size: 1.1rem;">Order #${order.id}</h3>
+                            <p style="color: var(--light-text); font-size: 0.9rem;">Placed on ${date}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="font-weight: bold; font-size: 1.2rem;">${formatPrice(order.amount)}</p>
+                            <span style="background: #e8f5e9; color: #2e7d32; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 500;">${order.status}</span>
+                        </div>
+                    </div>
+                    <div>${itemsHtml}</div>
+                `;
+                container.appendChild(orderEl);
+            });
+        });
+    </script>
+</body>
+
+</html>
