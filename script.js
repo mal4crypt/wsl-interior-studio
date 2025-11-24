@@ -283,6 +283,7 @@ function deleteAccount() {
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
     updateCartCount();
+    initSearch(); // Initialize search functionality
 
     // User Dropdown Logic
     const userIcon = document.querySelector('.user-icon');
@@ -538,4 +539,76 @@ function showModal(htmlContent) {
     modal.onclick = (e) => {
         if (e.target === modal) modal.remove();
     }
+}
+// Search Functionality
+function initSearch() {
+    // Create Modal HTML
+    const modal = document.createElement('div');
+    modal.className = 'search-modal';
+    modal.innerHTML = `
+        <button class="search-close">&times;</button>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search products...">
+            <div class="search-results"></div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Elements
+    const searchTrigger = document.querySelector('.fa-search')?.parentElement;
+    const closeBtn = modal.querySelector('.search-close');
+    const input = modal.querySelector('.search-input');
+    const resultsContainer = modal.querySelector('.search-results');
+
+    if (!searchTrigger) return;
+
+    // Event Listeners
+    searchTrigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        modal.classList.add('active');
+        input.focus();
+    });
+
+    closeBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        input.value = '';
+        resultsContainer.innerHTML = '';
+    });
+
+    // Close on outside click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
+
+    // Search Logic
+    input.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        resultsContainer.innerHTML = '';
+
+        if (query.length < 2) return;
+
+        const results = state.products.filter(p =>
+            p.name.toLowerCase().includes(query) ||
+            p.category.toLowerCase().includes(query)
+        );
+
+        if (results.length === 0) {
+            resultsContainer.innerHTML = '<p style="text-align: center; color: #999; grid-column: 1/-1;">No products found</p>';
+            return;
+        }
+
+        results.forEach(product => {
+            const item = document.createElement('div');
+            item.className = 'search-result-item';
+            item.onclick = () => window.location.href = `product.html?id=${product.id}`;
+            item.innerHTML = `
+                <img src="${product.image}" class="search-result-image" alt="${product.name}">
+                <div class="search-result-title">${product.name}</div>
+                <div class="search-result-price">${formatPrice(product.price)}</div>
+            `;
+            resultsContainer.appendChild(item);
+        });
+    });
 }
