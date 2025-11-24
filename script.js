@@ -716,3 +716,55 @@ function generateStars(rating) {
     }
     return stars;
 }
+
+// Admin Product Management
+function saveProducts() {
+    localStorage.setItem('products', JSON.stringify(state.products));
+}
+
+function addProduct(product) {
+    if (!state.currentUser || !state.currentUser.isAdmin) {
+        showNotification("Unauthorized action.", 'error');
+        return false;
+    }
+    
+    const newProduct = {
+        id: Date.now(),
+        ...product
+    };
+    
+    state.products.push(newProduct);
+    saveProducts();
+    showNotification("Product added successfully!", 'success');
+    return true;
+}
+
+function updateProduct(id, updates) {
+    if (!state.currentUser || !state.currentUser.isAdmin) {
+        showNotification("Unauthorized action.", 'error');
+        return false;
+    }
+
+    const index = state.products.findIndex(p => p.id === parseInt(id));
+    if (index === -1) return false;
+
+    state.products[index] = { ...state.products[index], ...updates };
+    saveProducts();
+    showNotification("Product updated successfully!", 'success');
+    return true;
+}
+
+function deleteProduct(id) {
+    if (!state.currentUser || !state.currentUser.isAdmin) {
+        showNotification("Unauthorized action.", 'error');
+        return false;
+    }
+
+    const index = state.products.findIndex(p => p.id === parseInt(id));
+    if (index === -1) return false;
+
+    state.products.splice(index, 1);
+    saveProducts();
+    showNotification("Product deleted successfully!", 'success');
+    return true;
+}

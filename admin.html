@@ -226,7 +226,11 @@
             <!-- Products Tab -->
             <div id="products-tab" class="tab-content active">
                 <div class="card">
-                    <h3>All Products</h3>
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3>All Products</h3>
+                        <button class="btn btn-sm" onclick="openAddProductModal()">+ Add New Product</button>
+                    </div>
                     <div style="overflow-x: auto;">
                         <table id="products-table">
                             <thead>
@@ -246,162 +250,199 @@
                 </div>
             </div>
 
-            <!-- Transactions Tab -->
-            <div id="transactions-tab" class="tab-content">
-                <div class="card">
-                    <h3>Record New Transaction</h3>
-                    <form onsubmit="handleTransactionSubmit(event)">
+            <!-- Product Modal -->
+            <div id="product-modal" class="modal"
+                style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+                <div class="modal-content"
+                    style="background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 500px; border-radius: 8px;">
+                    <span class="close" onclick="document.getElementById('product-modal').style.display='none'"
+                        style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+                    <h2 id="modal-title" style="margin-bottom: 1.5rem;">Add Product</h2>
+                    <form id="product-form">
+                        <input type="hidden" id="prod-id">
                         <div class="form-group">
-                            <label>Client Name</label>
-                            <input type="text" id="client-name" required>
+                            <label>Product Name</label>
+                            <input type="text" id="prod-name" required>
                         </div>
                         <div class="form-group">
-                            <label>Contact/Email</label>
-                            <input type="text" id="client-contact" required>
+                            <label>Price ($)</label>
+                            <input type="number" id="prod-price" required>
                         </div>
                         <div class="form-group">
-                            <label>Property Bought</label>
-                            <input type="text" id="property-bought" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Transaction Receipt</label>
-                            <input type="file" id="receipt-upload">
-                        </div>
-                        <div class="form-group">
-                            <label>Status</label>
-                            <select id="transaction-status">
-                                <option value="Pending">Pending</option>
-                                <option value="Completed">Completed</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn">Record Transaction</button>
-                    </form>
-                </div>
-
-                <div class="card">
-                    <h3>Recent Transactions</h3>
-                    <table id="transactions-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Client</th>
-                                <th>Property</th>
-                                <th>Status</th>
-                                <th>Receipt</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Transactions injected here -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Clients Tab -->
-            <div id="clients-tab" class="tab-content">
-                <div class="card">
-                    <h3>Registered Clients</h3>
-                    <table id="clients-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Cart Items</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Clients injected here -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="card">
-                    <h3>Send Notification</h3>
-                    <form onsubmit="handleSendNotification(event)">
-                        <div class="form-group">
-                            <label>Select Client</label>
-                            <select id="notif-client-select" required>
-                                <option value="">-- Select Client --</option>
+                            <label>Category</label>
+                            <select id="prod-category">
+                                <option value="Living Room">Living Room</option>
+                                <option value="Dining">Dining</option>
+                                <option value="Bedroom">Bedroom</option>
+                                <option value="Office">Office</option>
+                                <option value="Decor">Decor</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Message</label>
-                            <textarea id="notif-message" rows="3" required></textarea>
+                            <label>Image URL</label>
+                            <input type="text" id="prod-image" placeholder="images/..." required>
                         </div>
-                        <button type="submit" class="btn">Send Notification</button>
+                        <button type="submit" class="btn" style="width: 100%;">Save Product</button>
                     </form>
                 </div>
             </div>
+    </div>
 
-            <!-- Inbox Tab -->
-            <div id="inbox-tab" class="tab-content">
-                <div class="card">
-                    <h3>Bot Messages</h3>
-                    <div id="inbox-messages">
-                        <!-- Messages injected here -->
+    <!-- Transactions Tab -->
+    <div id="transactions-tab" class="tab-content">
+        <div class="card">
+            <h3>Record New Transaction</h3>
+            <form onsubmit="handleTransactionSubmit(event)">
+                <div class="form-group">
+                    <label>Client Name</label>
+                    <input type="text" id="client-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact/Email</label>
+                    <input type="text" id="client-contact" required>
+                </div>
+                <div class="form-group">
+                    <label>Property Bought</label>
+                    <input type="text" id="property-bought" required>
+                </div>
+                <div class="form-group">
+                    <label>Transaction Receipt</label>
+                    <input type="file" id="receipt-upload">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="transaction-status">
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Record Transaction</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>Recent Transactions</h3>
+            <table id="transactions-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Client</th>
+                        <th>Property</th>
+                        <th>Status</th>
+                        <th>Receipt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Transactions injected here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Clients Tab -->
+    <div id="clients-tab" class="tab-content">
+        <div class="card">
+            <h3>Registered Clients</h3>
+            <table id="clients-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Cart Items</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Clients injected here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Send Notification</h3>
+            <form onsubmit="handleSendNotification(event)">
+                <div class="form-group">
+                    <label>Select Client</label>
+                    <select id="notif-client-select" required>
+                        <option value="">-- Select Client --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Message</label>
+                    <textarea id="notif-message" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn">Send Notification</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Inbox Tab -->
+    <div id="inbox-tab" class="tab-content">
+        <div class="card">
+            <h3>Bot Messages</h3>
+            <div id="inbox-messages">
+                <!-- Messages injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Info Tab -->
+    <div id="contact-tab" class="tab-content">
+        <div class="card">
+            <h3>Update Contact Information</h3>
+            <form onsubmit="handleContactUpdate(event)">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="contact-email" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" id="contact-phone" required>
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp Number</label>
+                    <input type="text" id="contact-whatsapp" required>
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <input type="text" id="contact-address" required>
+                </div>
+                <button type="submit" class="btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="settings-tab" class="tab-content">
+        <div class="card">
+            <h3>Bot Settings</h3>
+            <p style="color: #666; margin-bottom: 1.5rem;">Control how the WSL Bot handles customer interactions
+                and data recording.</p>
+
+            <div class="form-group"
+                style="border: 1px solid #eee; padding: 1.5rem; border-radius: 8px; background: #f9f9f9;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <label style="font-size: 1.1rem; margin-bottom: 0.5rem; display: block;">Enable Bot Data
+                            Recording</label>
+                        <p style="color: #666; font-size: 0.9rem; margin: 0;">When enabled, the bot will save
+                            all customer messages, negotiation requests, problem reports, and payment
+                            confirmations to your admin inbox. When disabled, the bot will still respond to
+                            customers but won't record data.</p>
                     </div>
+                    <label class="toggle-switch" style="margin-left: 2rem;">
+                        <input type="checkbox" id="bot-recording-toggle" onchange="handleBotRecordingToggle()">
+                        <span class="toggle-slider"></span>
+                    </label>
                 </div>
             </div>
 
-            <!-- Contact Info Tab -->
-            <div id="contact-tab" class="tab-content">
-                <div class="card">
-                    <h3>Update Contact Information</h3>
-                    <form onsubmit="handleContactUpdate(event)">
-                        <div class="form-group">
-                            <label>Email Address</label>
-                            <input type="email" id="contact-email" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Phone Number</label>
-                            <input type="text" id="contact-phone" required>
-                        </div>
-                        <div class="form-group">
-                            <label>WhatsApp Number</label>
-                            <input type="text" id="contact-whatsapp" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Address</label>
-                            <input type="text" id="contact-address" required>
-                        </div>
-                        <button type="submit" class="btn">Save Changes</button>
-                    </form>
-                </div>
+            <div id="recording-status" style="margin-top: 1rem; padding: 1rem; border-radius: 8px; font-weight: 500;">
+                <!-- Status will be updated by JavaScript -->
             </div>
-
-            <!-- Settings Tab -->
-            <div id="settings-tab" class="tab-content">
-                <div class="card">
-                    <h3>Bot Settings</h3>
-                    <p style="color: #666; margin-bottom: 1.5rem;">Control how the WSL Bot handles customer interactions
-                        and data recording.</p>
-
-                    <div class="form-group"
-                        style="border: 1px solid #eee; padding: 1.5rem; border-radius: 8px; background: #f9f9f9;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <label style="font-size: 1.1rem; margin-bottom: 0.5rem; display: block;">Enable Bot Data
-                                    Recording</label>
-                                <p style="color: #666; font-size: 0.9rem; margin: 0;">When enabled, the bot will save
-                                    all customer messages, negotiation requests, problem reports, and payment
-                                    confirmations to your admin inbox. When disabled, the bot will still respond to
-                                    customers but won't record data.</p>
-                            </div>
-                            <label class="toggle-switch" style="margin-left: 2rem;">
-                                <input type="checkbox" id="bot-recording-toggle" onchange="handleBotRecordingToggle()">
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div id="recording-status"
-                        style="margin-top: 1rem; padding: 1rem; border-radius: 8px; font-weight: 500;">
-                        <!-- Status will be updated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-        </main>
+        </div>
+    </div>
+    </main>
     </div>
 
     <!-- Edit Product Modal -->
@@ -758,6 +799,78 @@
                 statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Recording is currently <strong>DISABLED</strong>. The bot will respond to customers but won\'t save data.';
             }
         }
+        // Product Management Logic
+        function renderProductsTable() {
+            const tbody = document.querySelector('#products-table tbody');
+            tbody.innerHTML = '';
+
+            state.products.forEach(product => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><img src="${product.image}" alt="${product.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
+                    <td>${product.name}</td>
+                    <td>${formatPrice(product.price)}</td>
+                    <td>${product.category}</td>
+                    <td>
+                        <button class="btn-sm btn" onclick="openEditProductModal(${product.id})">Edit</button>
+                        <button class="btn-sm btn" style="background-color: #dc3545;" onclick="handleDeleteProduct(${product.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openAddProductModal() {
+            document.getElementById('product-form').reset();
+            document.getElementById('prod-id').value = '';
+            document.getElementById('modal-title').textContent = 'Add Product';
+            document.getElementById('product-modal').style.display = 'block';
+        }
+
+        function openEditProductModal(id) {
+            const product = state.products.find(p => p.id === id);
+            if (!product) return;
+
+            document.getElementById('prod-id').value = product.id;
+            document.getElementById('prod-name').value = product.name;
+            document.getElementById('prod-price').value = product.price;
+            document.getElementById('prod-category').value = product.category;
+            document.getElementById('prod-image').value = product.image;
+
+            document.getElementById('modal-title').textContent = 'Edit Product';
+            document.getElementById('product-modal').style.display = 'block';
+        }
+
+        function handleDeleteProduct(id) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                if (deleteProduct(id)) {
+                    renderProductsTable();
+                }
+            }
+        }
+
+        document.getElementById('product-form').onsubmit = (e) => {
+            e.preventDefault();
+            const id = document.getElementById('prod-id').value;
+            const product = {
+                name: document.getElementById('prod-name').value,
+                price: parseFloat(document.getElementById('prod-price').value),
+                category: document.getElementById('prod-category').value,
+                image: document.getElementById('prod-image').value
+            };
+
+            if (id) {
+                if (updateProduct(id, product)) {
+                    document.getElementById('product-modal').style.display = 'none';
+                    renderProductsTable();
+                }
+            } else {
+                if (addProduct(product)) {
+                    document.getElementById('product-modal').style.display = 'none';
+                    renderProductsTable();
+                }
+            }
+        };
     </script>
 </body>
 
