@@ -123,9 +123,9 @@
         </div>
     </footer>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="js/vendor/firebase-app.js"></script>
+    <script src="js/vendor/firebase-auth.js"></script>
+    <script src="js/vendor/firebase-firestore.js"></script>
     <script src="firebase-config.js"></script>
     <script src="script.js"></script>
     <script src="bot.js"></script>
@@ -170,7 +170,17 @@
             }
         }
 
+        // Listen for products loaded from Firebase
+        document.addEventListener('productsLoaded', (event) => {
+            renderProducts(event.detail);
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
+            // Check if products already loaded (in case event fired before listener attached)
+            if (state && state.products && state.products.length > 0) {
+                renderProducts(state.products);
+            }
+
             // Check for category query param
             const urlParams = new URLSearchParams(window.location.search);
             const category = urlParams.get('category');
@@ -182,9 +192,10 @@
                     'dining': 'Dining',
                     'decor': 'Decor'
                 };
-                filterProducts(catMap[category] || 'all');
-            } else {
-                renderProducts(state.products);
+                // Wait for products to load before filtering
+                document.addEventListener('productsLoaded', () => {
+                    filterProducts(catMap[category] || 'all');
+                }, { once: true });
             }
         });
     </script>

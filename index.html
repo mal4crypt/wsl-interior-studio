@@ -173,18 +173,21 @@
         </div>
     </footer>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="js/vendor/firebase-app.js"></script>
+    <script src="js/vendor/firebase-auth.js"></script>
+    <script src="js/vendor/firebase-firestore.js"></script>
     <script src="firebase-config.js"></script>
     <script src="script.js"></script>
     <script src="bot.js"></script>
     <script>
         // Specific logic for Home Page
-        document.addEventListener('DOMContentLoaded', () => {
+        function renderFeaturedProducts(products) {
             const grid = document.getElementById('featured-products-grid');
+            if (!grid) return;
+
+            grid.innerHTML = ''; // Clear existing
             // Display first 8 products for horizontal scrolling
-            state.products.slice(0, 8).forEach(product => {
+            products.slice(0, 8).forEach(product => {
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.innerHTML = `
@@ -204,6 +207,18 @@
                 grid.appendChild(card);
             });
             updateWishlistIcons();
+        }
+
+        // Listen for products loaded from Firebase
+        document.addEventListener('productsLoaded', (event) => {
+            renderFeaturedProducts(event.detail);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if products already loaded
+            if (state && state.products && state.products.length > 0) {
+                renderFeaturedProducts(state.products);
+            }
         });
     </script>
 </body>
