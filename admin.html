@@ -326,10 +326,11 @@
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Client</th>
-                        <th>Property</th>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
                         <th>Status</th>
-                        <th>Receipt</th>
+                        <th>Items</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -599,20 +600,39 @@
             const tbody = document.querySelector('#transactions-table tbody');
             tbody.innerHTML = '';
 
-            state.transactions.forEach(t => {
+            if (state.transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6">No transactions yet.</td></tr>';
+                return;
+            }
+
+            state.transactions.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(t => {
                 const tr = document.createElement('tr');
+                const itemsList = t.items.map(i => `${i.name} (x${i.quantity})`).join(', ');
                 tr.innerHTML = `
-                    <td>${t.date}</td>
+                    <td>${new Date(t.date).toLocaleDateString()}</td>
+                    <td>#${t.id}</td>
                     <td>
-                        <strong>${t.clientName}</strong><br>
-                        <small>${t.clientContact}</small>
+                        <strong>${t.customer.name}</strong><br>
+                        <small>${t.customer.email}</small>
                     </td>
-                    <td>${t.property}</td>
-                    <td><span class="status-badge status-${t.status.toLowerCase()}">${t.status}</span></td>
-                    <td><a href="#" style="color: var(--primary-color);"><i class="fas fa-download"></i> View</a></td>
+                    <td>${formatPrice(t.amount)}</td>
+                    <td>
+                        <select onchange="handleStatusChange(${t.id}, this.value)" style="padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
+                            <option value="Pending" ${t.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Processing" ${t.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                            <option value="Shipped" ${t.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                            <option value="Delivered" ${t.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                            <option value="Cancelled" ${t.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                    </td>
+                    <td><small>${itemsList}</small></td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        function handleStatusChange(orderId, newStatus) {
+            updateOrderStatus(orderId, newStatus);
         }
 
         // Clients Logic

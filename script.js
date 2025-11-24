@@ -768,3 +768,19 @@ function deleteProduct(id) {
     showNotification("Product deleted successfully!", 'success');
     return true;
 }
+
+// Admin Order Management
+function updateOrderStatus(orderId, newStatus) {
+    if (!state.currentUser || !state.currentUser.isAdmin) {
+        showNotification("Unauthorized action.", 'error');
+        return false;
+    }
+
+    const index = state.transactions.findIndex(t => t.id === parseInt(orderId));
+    if (index === -1) return false;
+
+    state.transactions[index].status = newStatus;
+    saveTransactions();
+    showNotification(`Order #${orderId} status updated to ${newStatus}`, 'success');
+    return true;
+}
