@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ | WSL Interior Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .faq-item {
+            border-bottom: 1px solid #eee;
+            padding: 1.5rem 0;
+        }
+
+        .faq-question {
+            font-size: 1.2rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--primary-color);
+        }
+
+        .faq-question:hover {
+            color: var(--accent-color);
+        }
+
+        .faq-answer {
+            margin-top: 1rem;
+            color: var(--light-text);
+            display: none;
+            line-height: 1.6;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">WSL STUDIO</a>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="shop.html">Shop</a>
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                </div>
+                <div class="nav-icons">
+                    <a href="#" onclick="toggleSearch()"><i class="fas fa-search"></i></a>
+                    <div class="dropdown">
+                        <a href="#" class="user-icon" onclick="toggleUserDropdown()"><i class="fas fa-user"></i></a>
+                        <div id="user-dropdown" class="dropdown-content">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                    <a href="cart.html" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                    <div class="mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section style="background-color: #f0f0f0; padding: 5rem 0; text-align: center;">
+        <div class="container">
+            <h1 style="font-size: 3rem; margin-bottom: 1rem;">Frequently Asked Questions</h1>
+            <p style="max-width: 600px; margin: 0 auto; color: var(--light-text);">Find answers to common questions
+                about our products, shipping, and services.</p>
+        </div>
+    </section>
+
+    <!-- FAQ Content -->
+    <section style="padding: 5rem 0;">
+        <div class="container" style="max-width: 800px;">
+
+            <h2
+                style="margin-bottom: 2rem; border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 0.5rem;">
+                Shipping & Delivery</h2>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    How long does shipping take?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Standard shipping typically takes 3-5 business days within Nigeria. For international orders, please
+                    allow 7-14 business days. Expedited shipping options are available at checkout.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Do you ship internationally?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Yes, we ship to select international destinations. Shipping costs and delivery times vary by
+                    location. Please enter your address at checkout to see available options.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    How can I track my order?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Once your order is shipped, you will receive a confirmation email with a tracking number. You can
+                    also view your order status in the "My Orders" section of your account.
+                </div>
+            </div>
+
+            <h2
+                style="margin-top: 4rem; margin-bottom: 2rem; border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 0.5rem;">
+                Returns & Refunds</h2>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    What is your return policy?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    We accept returns within 30 days of delivery for items in their original condition. Custom or
+                    personalized items are non-refundable unless defective.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    How do I initiate a return?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Please contact our support team via the Contact page or email us at mailwaro.online@gmail.com with
+                    your order number. We will provide you with a return shipping label and instructions.
+                </div>
+            </div>
+
+            <h2
+                style="margin-top: 4rem; margin-bottom: 2rem; border-bottom: 2px solid var(--accent-color); display: inline-block; padding-bottom: 0.5rem;">
+                Products & Services</h2>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Do you offer interior design consultations?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Yes! We offer both virtual and in-person design consultations. Please visit our Contact page to
+                    schedule an appointment with one of our designers.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Can I customize a piece of furniture?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Many of our furniture pieces can be customized in terms of fabric, color, and finish. Look for the
+                    "Customizable" tag on product pages or contact us for specific requests.
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>WSL STUDIO</h4>
+                    <p>Premium interior design solutions for the modern lifestyle.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="shop.html">Shop</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> mailwaro.online@gmail.com</li>
+                        <li><i class="fas fa-phone"></i> +234 901 088 3999</li>
+                        <li><i class="fab fa-whatsapp"></i> +234 901 088 3999</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Gwarinpa, 900108, FCT Nigeria</li>
+                        <li><a href="https://www.instagram.com/wslrealty?igsh=ejlheWszYzJ2b2pz" target="_blank"
+                                style="color: #fff;"><i class="fab fa-instagram"></i> Follow us on Instagram</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 WSL Interior Studio. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="bot.js"></script>
+    <script>
+        function toggleFaq(element) {
+            const item = element.parentElement;
+            item.classList.toggle('active');
+        }
+    </script>
+</body>
+
+</html>
