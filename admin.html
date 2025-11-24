@@ -16,6 +16,7 @@
         .admin-container {
             display: flex;
             min-height: 100vh;
+            position: relative;
         }
 
         .sidebar {
@@ -24,6 +25,87 @@
             color: white;
             padding: 2rem;
             flex-shrink: 0;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .mobile-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-right: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .mobile-toggle {
+                display: block;
+            }
+
+            .main-content {
+                padding: 1rem;
+                width: 100%;
+            }
+
+            /* Responsive Tables (Card View) */
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
+                display: block;
+            }
+
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            tr {
+                margin-bottom: 1rem;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                background: white;
+                padding: 0.5rem;
+            }
+
+            td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+                padding: 0.5rem;
+                border-bottom: 1px solid #eee;
+            }
+
+            td:last-child {
+                border-bottom: none;
+            }
+
+            td:before {
+                position: absolute;
+                top: 0.5rem;
+                left: 0.5rem;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+                content: attr(data-label);
+            }
         }
 
         .sidebar h2 {
@@ -217,7 +299,11 @@
         <!-- Main Content -->
         <main class="main-content">
             <div class="admin-header">
-                <h1 id="page-title">Product Management</h1>
+                <div style="display: flex; align-items: center;">
+                    <i class="fas fa-bars mobile-toggle"
+                        onclick="document.querySelector('.sidebar').classList.toggle('active')"></i>
+                    <h1 id="page-title" style="margin: 0;">Product Management</h1>
+                </div>
                 <div class="user-info">
                     <span>Welcome, <strong id="admin-email">Admin</strong></span>
                 </div>
@@ -531,11 +617,11 @@
             state.products.forEach(product => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><img src="${product.image}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
-                    <td>${product.name}</td>
-                    <td>${formatPrice(product.price)}</td>
-                    <td>${product.category}</td>
-                    <td>
+                    <td data-label="Image"><img src="${product.image}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
+                    <td data-label="Name">${product.name}</td>
+                    <td data-label="Price">${formatPrice(product.price)}</td>
+                    <td data-label="Category">${product.category}</td>
+                    <td data-label="Actions">
                         <button class="btn-sm btn" onclick="openEditModal(${product.id})">Edit</button>
                     </td>
                 `;
@@ -609,14 +695,14 @@
                 const tr = document.createElement('tr');
                 const itemsList = t.items.map(i => `${i.name} (x${i.quantity})`).join(', ');
                 tr.innerHTML = `
-                    <td>${new Date(t.date).toLocaleDateString()}</td>
-                    <td>#${t.id}</td>
-                    <td>
+                    <td data-label="Date">${new Date(t.date).toLocaleDateString()}</td>
+                    <td data-label="Order ID">#${t.id}</td>
+                    <td data-label="Customer">
                         <strong>${t.customer.name}</strong><br>
                         <small>${t.customer.email}</small>
                     </td>
-                    <td>${formatPrice(t.amount)}</td>
-                    <td>
+                    <td data-label="Amount">${formatPrice(t.amount)}</td>
+                    <td data-label="Status">
                         <select onchange="handleStatusChange(${t.id}, this.value)" style="padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
                             <option value="Pending" ${t.status === 'Pending' ? 'selected' : ''}>Pending</option>
                             <option value="Processing" ${t.status === 'Processing' ? 'selected' : ''}>Processing</option>
@@ -625,7 +711,7 @@
                             <option value="Cancelled" ${t.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
                         </select>
                     </td>
-                    <td><small>${itemsList}</small></td>
+                    <td data-label="Items"><small>${itemsList}</small></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -655,10 +741,10 @@
                 const tr = document.createElement('tr');
                 const cartCount = client.cart ? client.cart.length : 0;
                 tr.innerHTML = `
-                    <td>${client.name}</td>
-                    <td>${client.email}</td>
-                    <td>${cartCount} items <a href="#" onclick="viewClientCart('${client.email}')" style="font-size: 0.8rem; margin-left: 5px;">(View)</a></td>
-                    <td>
+                    <td data-label="Name">${client.name}</td>
+                    <td data-label="Email">${client.email}</td>
+                    <td data-label="Cart">${cartCount} items <a href="#" onclick="viewClientCart('${client.email}')" style="font-size: 0.8rem; margin-left: 5px;">(View)</a></td>
+                    <td data-label="Actions">
                         <button class="btn-sm btn" onclick="prepareNotification('${client.email}')">Notify</button>
                     </td>
                 `;
