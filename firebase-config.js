@@ -12,7 +12,20 @@ const firebaseConfig = {
   measurementId: "G-MCZKXWC2C8"
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
+// Initialize Firebase (with error checking)
+let db, auth;
+
+if (typeof firebase !== 'undefined') {
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    auth = firebase.auth();
+    console.log('Firebase initialized successfully');
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
+    alert('Firebase initialization failed. Please check your internet connection and refresh the page.');
+  }
+} else {
+  console.error('Firebase SDK not loaded. Please check your internet connection.');
+  alert('Failed to load Firebase. Please check your internet connection and refresh the page.');
+}
