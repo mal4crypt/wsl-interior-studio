@@ -134,6 +134,9 @@ function initFirebase() {
                 renderProductsTable();
             }
         }
+    }, (error) => {
+        console.error("Error getting products:", error);
+        showNotification("Database Error: " + error.message + ". Check Firestore Rules.", 'error');
     });
 
     // Transactions Listener (for Admin)
@@ -145,12 +148,22 @@ function initFirebase() {
         if (window.location.pathname.includes('admin.html')) {
             renderTransactionsTable();
         }
+    }, (error) => {
+        console.error("Error getting orders:", error);
+        if (state.currentUser && state.currentUser.isAdmin) {
+            showNotification("Order Sync Error: " + error.message, 'error');
+        }
     });
 }
 
 function uploadDefaultProducts() {
     defaultProducts.forEach(p => {
-        db.collection('products').add(p);
+        db.collection('products').add(p)
+            .then(() => console.log("Default product uploaded"))
+            .catch(e => {
+                console.error("Error uploading default:", e);
+                showNotification("Upload Error: " + e.message + ". Check Firestore Rules.", 'error');
+            });
     });
 }
 
