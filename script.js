@@ -251,9 +251,9 @@ function saveUser() {
 }
 
 function formatPrice(price) {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-NG', {
         style: 'currency',
-        currency: 'USD'
+        currency: 'NGN'
     }).format(price);
 }
 
@@ -727,12 +727,12 @@ function addProduct(product) {
         showNotification("Unauthorized action.", 'error');
         return false;
     }
-    
+
     const newProduct = {
         id: Date.now(),
         ...product
     };
-    
+
     state.products.push(newProduct);
     saveProducts();
     showNotification("Product added successfully!", 'success');
@@ -789,10 +789,10 @@ function updateOrderStatus(orderId, newStatus) {
 function handleSocialLogin(provider) {
     const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
     const email = `user@${provider}.com`; // Mock email
-    
+
     // Check if user exists
     let user = state.users.find(u => u.email === email);
-    
+
     if (!user) {
         // Create new user
         user = {
@@ -816,7 +816,7 @@ function handleSocialLogin(provider) {
     // Login
     state.currentUser = user;
     saveUser();
-    
+
     setTimeout(() => {
         window.location.href = 'index.html';
     }, 1500);
@@ -865,7 +865,7 @@ function handleForgotPassword(e) {
             state.users[userIndex].password = newPass;
             saveUsers();
             showNotification("Password reset successfully! Please sign in.", 'success');
-            
+
             setTimeout(() => {
                 switchAuthView('login');
                 // Reset form
