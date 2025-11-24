@@ -13,7 +13,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase (with error checking)
-let db, auth;
+// Use var instead of let to ensure global scope
+var db, auth;
 
 if (typeof firebase !== 'undefined') {
   try {
