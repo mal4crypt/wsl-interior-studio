@@ -119,20 +119,15 @@ function initFirebase() {
     db.collection('products').onSnapshot((snapshot) => {
         state.products = [];
         snapshot.forEach((doc) => {
-            state.products.push({ id: doc.id, ...doc.data() });
+            const data = doc.data();
+            // Ensure each product has an 'id' field; use doc.id if missing
+            if (!data.id) data.id = doc.id;
+            state.products.push(data);
         });
-
-        // If empty, upload defaults
+        renderProductsTable();
+        // If no products exist, upload default set
         if (state.products.length === 0) {
             uploadDefaultProducts();
-        } else {
-            // Re-render if on shop/index/admin page
-            if (window.location.pathname.includes('shop.html') || window.location.pathname.includes('index.html')) {
-                renderProducts();
-            }
-            if (window.location.pathname.includes('admin.html')) {
-                renderProductsTable();
-            }
         }
     }, (error) => {
         console.error("Error getting products:", error);
@@ -157,9 +152,11 @@ function initFirebase() {
 }
 
 function uploadDefaultProducts() {
+    // Preserve the predefined IDs by using them as document IDs
     defaultProducts.forEach(p => {
-        db.collection('products').add(p)
-            .then(() => console.log("Default product uploaded"))
+        const docRef = db.collection('products').doc(String(p.id));
+        docRef.set(p)
+            .then(() => console.log("Default product uploaded with ID " + p.id))
             .catch(e => {
                 console.error("Error uploading default:", e);
                 showNotification("Upload Error: " + e.message + ". Check Firestore Rules.", 'error');
@@ -209,6 +206,13 @@ function updateCartCount() {
         cartCount.textContent = count;
     }
 }
+
+function updateUIForUser() {
+    // Refresh UI elements after auth state changes
+    updateCartCount();
+    // Additional UI updates can be added here
+}
+
 
 function addToCart(productId) {
     if (!state.currentUser) {
