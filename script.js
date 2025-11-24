@@ -95,6 +95,7 @@ const state = {
     products: JSON.parse(localStorage.getItem('products')) || defaultProducts,
     contactInfo: JSON.parse(localStorage.getItem('contactInfo')) || defaultContactInfo,
     transactions: JSON.parse(localStorage.getItem('transactions')) || [],
+    reviews: JSON.parse(localStorage.getItem('reviews')) || [],
     currentUser: JSON.parse(localStorage.getItem('currentUser')) || null
 };
 
@@ -239,6 +240,10 @@ function saveContactInfo() {
 
 function saveTransactions() {
     localStorage.setItem('transactions', JSON.stringify(state.transactions));
+}
+
+function saveReviews() {
+    localStorage.setItem('reviews', JSON.stringify(state.reviews));
 }
 
 function saveUser() {
@@ -663,4 +668,51 @@ function initSearch() {
             resultsContainer.appendChild(item);
         });
     });
+}
+
+// Review Functionality
+function addReview(productId, rating, comment) {
+    if (!state.currentUser) {
+        showNotification("Please sign in to leave a review.", 'error');
+        return false;
+    }
+
+    const review = {
+        id: Date.now(),
+        productId: parseInt(productId),
+        user: state.currentUser.name,
+        rating: parseInt(rating),
+        comment: comment,
+        date: new Date().toISOString()
+    };
+
+    state.reviews.push(review);
+    saveReviews();
+    showNotification("Review submitted successfully!", 'success');
+    return true;
+}
+
+function getProductReviews(productId) {
+    return state.reviews.filter(r => r.productId === parseInt(productId)).sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+function getAverageRating(productId) {
+    const reviews = getProductReviews(productId);
+    if (reviews.length === 0) return 0;
+    const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+    return sum / reviews.length;
+}
+
+function generateStars(rating) {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+            stars += '<i class="fas fa-star"></i>';
+        } else if (i - 0.5 <= rating) {
+            stars += '<i class="fas fa-star-half-alt"></i>';
+        } else {
+            stars += '<i class="far fa-star"></i>';
+        }
+    }
+    return stars;
 }
