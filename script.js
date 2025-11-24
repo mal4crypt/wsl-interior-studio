@@ -90,14 +90,69 @@ const defaultContactInfo = {
 const ADMIN_EMAILS = ['mal4crypt404@gmail.com', 'mailwaro.online@gmail.com'];
 
 const state = {
-    // Users array: { email, name, password, cart: [], notifications: [], isAdmin: boolean }
-    users: JSON.parse(localStorage.getItem('users')) || [],
-    products: JSON.parse(localStorage.getItem('products')) || defaultProducts,
-    contactInfo: JSON.parse(localStorage.getItem('contactInfo')) || defaultContactInfo,
-    transactions: JSON.parse(localStorage.getItem('transactions')) || [],
-    reviews: JSON.parse(localStorage.getItem('reviews')) || [],
-    currentUser: JSON.parse(localStorage.getItem('currentUser')) || null
+    users: [],
+    products: [],
+    contactInfo: defaultContactInfo,
+    transactions: [],
+    reviews: [],
+    currentUser: null
 };
+
+// Initialize Firebase Listeners
+function initFirebase() {
+    // Auth Listener
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            // Get user details from Firestore
+            const doc = await db.collection('users').doc(user.uid).get();
+            if (doc.exists) {
+                state.currentUser = { ...doc.data(), uid: user.uid };
+                updateUIForUser();
+            }
+        } else {
+            state.currentUser = null;
+            updateUIForUser();
+        }
+    });
+
+    // Products Listener
+    db.collection('products').onSnapshot((snapshot) => {
+        state.products = [];
+        snapshot.forEach((doc) => {
+            state.products.push({ id: doc.id, ...doc.data() });
+        });
+
+        // If empty, upload defaults
+        if (state.products.length === 0) {
+            uploadDefaultProducts();
+        } else {
+            // Re-render if on shop/index/admin page
+            if (window.location.pathname.includes('shop.html') || window.location.pathname.includes('index.html')) {
+                renderProducts();
+            }
+            if (window.location.pathname.includes('admin.html')) {
+                renderProductsTable();
+            }
+        }
+    });
+
+    // Transactions Listener (for Admin)
+    db.collection('orders').onSnapshot((snapshot) => {
+        state.transactions = [];
+        snapshot.forEach((doc) => {
+            state.transactions.push({ id: doc.id, ...doc.data() });
+        });
+        if (window.location.pathname.includes('admin.html')) {
+            renderTransactionsTable();
+        }
+    });
+}
+
+function uploadDefaultProducts() {
+    defaultProducts.forEach(p => {
+        db.collection('products').add(p);
+    });
+}
 
 // DOM Elements
 const cartCount = document.querySelector('.cart-count');
@@ -227,7 +282,7 @@ function updateWishlistIcons() {
 }
 
 function saveUsers() {
-    localStorage.setItem('users', JSON.stringify(state.users));
+    // No-op: Users are saved directly to Firestore
 }
 
 function saveProducts() {
@@ -239,15 +294,17 @@ function saveContactInfo() {
 }
 
 function saveTransactions() {
-    localStorage.setItem('transactions', JSON.stringify(state.transactions));
+    // No-op: Transactions are saved directly to Firestore
 }
 
 function saveReviews() {
     localStorage.setItem('reviews', JSON.stringify(state.reviews));
 }
 
-function saveUser() {
-    localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
+async function saveUser() {
+    if (state.currentUser) {
+        await db.collection('users').doc(state.currentUser.uid).set(state.currentUser);
+    }
 }
 
 function formatPrice(price) {
@@ -257,66 +314,49 @@ function formatPrice(price) {
     }).format(price);
 }
 
-function registerUser(name, email, password) {
-    const existingUser = state.users.find(u => u.email === email);
-    if (existingUser) {
-        showNotification('User already exists with this email.', 'error');
-        return false;
-    }
+async function registerUser(name, email, password) {
+    try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
 
-    // Determine username: use provided, else generate from email (special case for mal4crypt404@gmail.com)
-    let username = document.getElementById('signup-username')?.value?.trim();
-    if (!username) {
-        if (email === 'mal4crypt404@gmail.com') {
-            username = 'mal4crypt';
-        } else {
-            username = email.split('@')[0];
+        let username = document.getElementById('signup-username')?.value?.trim();
+        if (!username) {
+            if (email === 'mal4crypt404@gmail.com') {
+                username = 'mal4crypt';
+            } else {
+                username = email.split('@')[0];
+            }
         }
-    }
-    const newUser = {
-        email,
-        name,
-        username,
-        password, // In a real app, hash this!
-        cart: [],
-        notifications: [],
-        isAdmin: ADMIN_EMAILS.includes(email)
-    };
 
-    state.users.push(newUser);
-    saveUsers();
-    return true;
-}
-
-function loginUser(email, password) {
-    // In a real app, verify password. Here we just check email for simplicity as per previous mock, 
-    // but we should check against stored users if they exist.
-    // For backward compatibility with the mock flow, if user doesn't exist in 'users' array but is trying to login,
-    // we might need to auto-register or fail. Let's auto-register for now if not found to keep it simple,
-    // or strictly check. The prompt implies "signed in member", so let's stick to registered users.
-
-    let user = state.users.find(u => u.email === email);
-
-    // If user not found (legacy/mock), create one on the fly for now to not break flow
-    if (!user) {
-        user = {
+        const newUser = {
             email,
-            name: email.split('@')[0],
-            username: email === 'mal4crypt404@gmail.com' ? 'mal4crypt' : email.split('@')[0],
-            password: 'password',
+            name,
+            username,
             cart: [],
             wishlist: [],
             notifications: [],
-            isAdmin: email === 'admin@wsl.com'
+            isAdmin: ADMIN_EMAILS.includes(email)
         };
-        state.users.push(user);
-        saveUsers();
+
+        // Save to Firestore
+        await db.collection('users').doc(user.uid).set(newUser);
+
+        showNotification('Account created successfully!', 'success');
+        return true;
+    } catch (error) {
+        showNotification(error.message, 'error');
+        return false;
     }
+}
 
-    state.currentUser = user;
-    saveUser();
-
-    window.location.href = 'index.html';
+async function loginUser(email, password) {
+    try {
+        await auth.signInWithEmailAndPassword(email, password);
+        showNotification('Logged in successfully!', 'success');
+        setTimeout(() => window.location.href = 'index.html', 1000);
+    } catch (error) {
+        showNotification(error.message, 'error');
+    }
 }
 
 function logoutUser() {
@@ -337,6 +377,7 @@ function deleteAccount() {
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
+    initFirebase();
     updateCartCount();
     initSearch(); // Initialize search functionality
 
@@ -718,71 +759,62 @@ function generateStars(rating) {
 }
 
 // Admin Product Management
-function saveProducts() {
-    localStorage.setItem('products', JSON.stringify(state.products));
-}
-
-function addProduct(product) {
-    if (!state.currentUser || !state.currentUser.isAdmin) {
-        showNotification("Unauthorized action.", 'error');
+async function addProduct(product) {
+    if (!state.currentUser || !state.currentUser.isAdmin) return false;
+    try {
+        // Remove ID as Firestore generates it, or use it if provided
+        const { id, ...data } = product;
+        await db.collection('products').add(data);
+        showNotification("Product added successfully!", 'success');
+        return true;
+    } catch (e) {
+        showNotification(e.message, 'error');
         return false;
     }
-
-    const newProduct = {
-        id: Date.now(),
-        ...product
-    };
-
-    state.products.push(newProduct);
-    saveProducts();
-    showNotification("Product added successfully!", 'success');
-    return true;
 }
 
-function updateProduct(id, updates) {
-    if (!state.currentUser || !state.currentUser.isAdmin) {
-        showNotification("Unauthorized action.", 'error');
+async function updateProduct(id, updates) {
+    if (!state.currentUser || !state.currentUser.isAdmin) return false;
+    try {
+        // Find doc ID by product ID field (since we stored ID in field)
+        // Actually, better to use doc ID. But our state uses 'id' field.
+        // Let's assume state.products has 'id' as doc ID now (from initFirebase)
+        await db.collection('products').doc(id).update(updates);
+        showNotification("Product updated successfully!", 'success');
+        return true;
+    } catch (e) {
+        showNotification(e.message, 'error');
         return false;
     }
-
-    const index = state.products.findIndex(p => p.id === parseInt(id));
-    if (index === -1) return false;
-
-    state.products[index] = { ...state.products[index], ...updates };
-    saveProducts();
-    showNotification("Product updated successfully!", 'success');
-    return true;
 }
 
-function deleteProduct(id) {
-    if (!state.currentUser || !state.currentUser.isAdmin) {
-        showNotification("Unauthorized action.", 'error');
+async function deleteProduct(id) {
+    if (!state.currentUser || !state.currentUser.isAdmin) return false;
+    try {
+        await db.collection('products').doc(id).delete();
+        showNotification("Product deleted successfully!", 'success');
+        return true;
+    } catch (e) {
+        showNotification(e.message, 'error');
         return false;
     }
-
-    const index = state.products.findIndex(p => p.id === parseInt(id));
-    if (index === -1) return false;
-
-    state.products.splice(index, 1);
-    saveProducts();
-    showNotification("Product deleted successfully!", 'success');
-    return true;
 }
 
 // Admin Order Management
-function updateOrderStatus(orderId, newStatus) {
+async function updateOrderStatus(orderId, newStatus) {
     if (!state.currentUser || !state.currentUser.isAdmin) {
         showNotification("Unauthorized action.", 'error');
         return false;
     }
 
-    const index = state.transactions.findIndex(t => t.id === parseInt(orderId));
-    if (index === -1) return false;
-
-    state.transactions[index].status = newStatus;
-    saveTransactions();
-    showNotification(`Order #${orderId} status updated to ${newStatus}`, 'success');
-    return true;
+    try {
+        await db.collection('orders').doc(String(orderId)).update({ status: newStatus });
+        showNotification(`Order status updated to ${newStatus}`, 'success');
+        return true;
+    } catch (e) {
+        showNotification(e.message, 'error');
+        return false;
+    }
 }
 
 // Auth Enhancements

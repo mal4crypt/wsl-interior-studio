@@ -566,6 +566,10 @@
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="script.js"></script>
     <script src="bot.js"></script>
     <script>
@@ -645,20 +649,16 @@
             document.getElementById('edit-product-modal').style.display = 'none';
         }
 
-        function handleProductUpdate(e) {
+        async function handleProductUpdate(e) {
             e.preventDefault();
-            const id = parseInt(document.getElementById('edit-id').value);
+            const id = document.getElementById('edit-id').value; // String ID now
             const name = document.getElementById('edit-name').value;
             const price = parseFloat(document.getElementById('edit-price').value);
             const image = document.getElementById('edit-image').value;
 
-            const productIndex = state.products.findIndex(p => p.id === id);
-            if (productIndex !== -1) {
-                state.products[productIndex] = { ...state.products[productIndex], name, price, image };
-                saveProducts();
-                renderProductsTable();
+            const success = await updateProduct(id, { name, price, image });
+            if (success) {
                 closeEditModal();
-                alert('Product updated successfully!');
             }
         }
 
@@ -666,20 +666,26 @@
         function handleTransactionSubmit(e) {
             e.preventDefault();
             const transaction = {
-                id: Date.now(),
-                date: new Date().toLocaleDateString(),
+                date: new Date().toISOString(),
                 clientName: document.getElementById('client-name').value,
                 clientContact: document.getElementById('client-contact').value,
                 property: document.getElementById('property-bought').value,
                 status: document.getElementById('transaction-status').value,
-                receipt: 'receipt_mock.pdf' // Mock upload
+                receipt: 'receipt_mock.pdf', // Mock upload
+                amount: 0,
+                items: [],
+                customer: {
+                    name: document.getElementById('client-name').value,
+                    email: document.getElementById('client-contact').value
+                }
             };
 
-            state.transactions.unshift(transaction);
-            saveTransactions();
-            renderTransactionsTable();
-            e.target.reset();
-            alert('Transaction recorded successfully!');
+            db.collection('orders').add(transaction)
+                .then(() => {
+                    alert('Transaction recorded successfully!');
+                    e.target.reset();
+                })
+                .catch(error => alert("Error: " + error.message));
         }
 
         function renderTransactionsTable() {
