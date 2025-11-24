@@ -129,6 +129,8 @@ function initFirebase() {
         if (state.products.length === 0) {
             uploadDefaultProducts();
         }
+        // Dispatch event for other components (e.g., shop page)
+        document.dispatchEvent(new CustomEvent('productsLoaded', { detail: state.products }));
     }, (error) => {
         console.error("Error getting products:", error);
         showNotification("Database Error: " + error.message + ". Check Firestore Rules.", 'error');
@@ -149,6 +151,7 @@ function initFirebase() {
             showNotification("Order Sync Error: " + error.message, 'error');
         }
     });
+
 }
 
 function uploadDefaultProducts() {
@@ -391,6 +394,47 @@ function deleteAccount() {
         logoutUser();
     }
 }
+
+// Global login handler for login form
+window.handleLogin = function (e) {
+    e.preventDefault();
+    const emailInput = document.getElementById('login-email');
+    const passwordInput = document.getElementById('login-password');
+    if (emailInput && passwordInput) {
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        loginUser(email, password);
+    } else {
+        showNotification('Login fields not found.', 'error');
+    }
+};
+
+window.handleSignup = function (e) {
+    e.preventDefault();
+    const nameInput = document.getElementById('signup-name');
+    const emailInput = document.getElementById('signup-email');
+    const passwordInput = document.getElementById('signup-password');
+    const confirmInput = document.getElementById('signup-confirm');
+
+    if (nameInput && emailInput && passwordInput && confirmInput) {
+        const name = nameInput.value;
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        const confirm = confirmInput.value;
+
+        if (password !== confirm) {
+            showNotification('Passwords do not match!', 'error');
+            return;
+        }
+
+        if (registerUser(name, email, password)) {
+            showNotification(`Account created successfully for ${name}! Logging you in...`, 'success');
+            setTimeout(() => {
+                loginUser(email, password);
+            }, 1500);
+        }
+    }
+};
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
