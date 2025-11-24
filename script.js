@@ -784,3 +784,97 @@ function updateOrderStatus(orderId, newStatus) {
     showNotification(`Order #${orderId} status updated to ${newStatus}`, 'success');
     return true;
 }
+
+// Auth Enhancements
+function handleSocialLogin(provider) {
+    const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
+    const email = `user@${provider}.com`; // Mock email
+    
+    // Check if user exists
+    let user = state.users.find(u => u.email === email);
+    
+    if (!user) {
+        // Create new user
+        user = {
+            name: `${providerName} User`,
+            email: email,
+            username: `${provider}_user`,
+            password: 'social_login_dummy_password', // Not used for social login
+            cart: [],
+            wishlist: [],
+            notifications: [],
+            isAdmin: false,
+            provider: provider
+        };
+        state.users.push(user);
+        saveUsers();
+        showNotification(`Account created with ${providerName}!`, 'success');
+    } else {
+        showNotification(`Welcome back, ${user.name}!`, 'success');
+    }
+
+    // Login
+    state.currentUser = user;
+    saveUser();
+    
+    setTimeout(() => {
+        window.location.href = 'index.html';
+    }, 1500);
+}
+
+let isResetting = false;
+
+function handleForgotPassword(e) {
+    e.preventDefault();
+    const email = document.getElementById('forgot-email').value;
+    const btn = document.getElementById('forgot-btn');
+    const fields = document.getElementById('reset-fields');
+
+    if (!isResetting) {
+        // Step 1: Verify Email
+        const user = state.users.find(u => u.email === email);
+        if (!user) {
+            showNotification("No account found with this email.", 'error');
+            return;
+        }
+
+        // Simulate sending email / Show fields
+        showNotification("Reset link sent! (Simulated: Enter new password below)", 'success');
+        fields.style.display = 'block';
+        document.getElementById('forgot-email').disabled = true;
+        btn.textContent = "Reset Password";
+        isResetting = true;
+    } else {
+        // Step 2: Reset Password
+        const newPass = document.getElementById('new-password').value;
+        const confirmPass = document.getElementById('confirm-new-password').value;
+
+        if (newPass !== confirmPass) {
+            showNotification("Passwords do not match!", 'error');
+            return;
+        }
+
+        if (newPass.length < 6) {
+            showNotification("Password must be at least 6 characters.", 'error');
+            return;
+        }
+
+        // Update User
+        const userIndex = state.users.findIndex(u => u.email === email);
+        if (userIndex !== -1) {
+            state.users[userIndex].password = newPass;
+            saveUsers();
+            showNotification("Password reset successfully! Please sign in.", 'success');
+            
+            setTimeout(() => {
+                switchAuthView('login');
+                // Reset form
+                e.target.reset();
+                fields.style.display = 'none';
+                document.getElementById('forgot-email').disabled = false;
+                btn.textContent = "Send Reset Link";
+                isResetting = false;
+            }, 2000);
+        }
+    }
+}
