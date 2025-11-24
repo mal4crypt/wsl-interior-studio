@@ -176,6 +176,55 @@ function addToCart(productId) {
     showNotification(`${product.name} added to cart!`, 'success');
 }
 
+function toggleWishlist(productId) {
+    if (!state.currentUser) {
+        showNotification("Please sign in to save items.", 'error');
+        return;
+    }
+
+    const userIndex = state.users.findIndex(u => u.email === state.currentUser.email);
+    if (userIndex === -1) return;
+
+    let wishlist = state.users[userIndex].wishlist || [];
+    const existingIndex = wishlist.findIndex(id => id === productId);
+
+    if (existingIndex !== -1) {
+        // Remove
+        wishlist.splice(existingIndex, 1);
+        showNotification("Removed from wishlist", 'info');
+    } else {
+        // Add
+        wishlist.push(productId);
+        showNotification("Added to wishlist", 'success');
+    }
+
+    // Update state
+    state.users[userIndex].wishlist = wishlist;
+    state.currentUser.wishlist = wishlist;
+
+    saveUsers();
+    saveUser();
+
+    // Update UI if on page
+    updateWishlistIcons();
+}
+
+function updateWishlistIcons() {
+    const buttons = document.querySelectorAll('.wishlist-btn');
+    const wishlist = state.currentUser?.wishlist || [];
+
+    buttons.forEach(btn => {
+        const id = parseInt(btn.dataset.id);
+        if (wishlist.includes(id)) {
+            btn.classList.add('active');
+            btn.innerHTML = '<i class="fas fa-heart"></i>';
+        } else {
+            btn.classList.remove('active');
+            btn.innerHTML = '<i class="far fa-heart"></i>';
+        }
+    });
+}
+
 function saveUsers() {
     localStorage.setItem('users', JSON.stringify(state.users));
 }
@@ -251,8 +300,9 @@ function loginUser(email, password) {
             username: email === 'mal4crypt404@gmail.com' ? 'mal4crypt' : email.split('@')[0],
             password: 'password',
             cart: [],
+            wishlist: [],
             notifications: [],
-            isAdmin: ADMIN_EMAILS.includes(email)
+            isAdmin: email === 'admin@wsl.com'
         };
         state.users.push(user);
         saveUsers();
@@ -320,6 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <ul class="dropdown-list">
                     <li><a href="#" onclick="showCartModal()"><i class="fas fa-shopping-cart"></i> See Cart List</a></li>
                     <li><a href="orders.html"><i class="fas fa-box"></i> My Orders</a></li>
+                    <li><a href="wishlist.html"><i class="fas fa-heart"></i> My Wishlist</a></li>
                     <li><a href="#" onclick="showNotifications()"><i class="fas fa-bell"></i> Notifications <span class="badge" id="notif-badge">${state.currentUser.notifications ? state.currentUser.notifications.length : 0}</span></a></li>
                     <li><a href="#" onclick="showHelp()"><i class="fas fa-question-circle"></i> Help / FAQ</a></li>
                     ${state.currentUser.isAdmin ? '<li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a></li>' : ''}

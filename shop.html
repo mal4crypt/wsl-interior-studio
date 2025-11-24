@@ -139,6 +139,9 @@
                         <a href="product.html?id=${product.id}">
                             <img src="${product.image}" alt="${product.name}">
                         </a>
+                        <button class="wishlist-btn" onclick="toggleWishlist(${product.id})" data-id="${product.id}">
+                            <i class="far fa-heart"></i>
+                        </button>
                     </div>
                     <div class="product-info">
                         <h3 class="product-title"><a href="product.html?id=${product.id}">${product.name}</a></h3>
@@ -150,6 +153,7 @@
             });
 
             count.textContent = `Showing ${products.length} products`;
+            updateWishlistIcons();
         }
 
         function filterProducts(category) {
