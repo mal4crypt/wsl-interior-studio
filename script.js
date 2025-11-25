@@ -117,6 +117,7 @@ function initFirebase() {
 
     // Products Listener
     db.collection('products').onSnapshot((snapshot) => {
+        console.log('Products snapshot received. Docs:', snapshot.size);
         state.products = [];
         snapshot.forEach((doc) => {
             const data = doc.data();
@@ -124,12 +125,15 @@ function initFirebase() {
             if (!data.id) data.id = doc.id;
             state.products.push(data);
         });
+        console.log('State products populated:', state.products.length);
         renderProductsTable();
         // If no products exist, upload default set
         if (state.products.length === 0) {
+            console.log('No products found, uploading defaults...');
             uploadDefaultProducts();
         }
         // Dispatch event for other components (e.g., shop page)
+        console.log('Dispatching productsLoaded event');
         document.dispatchEvent(new CustomEvent('productsLoaded', { detail: state.products }));
     }, (error) => {
         console.error("Error getting products:", error);
@@ -437,168 +441,197 @@ window.handleSignup = function (e) {
 };
 
 // Initialization
-document.addEventListener('DOMContentLoaded', () => {
-    initFirebase();
-    updateCartCount();
-    initSearch(); // Initialize search functionality
+// Initialize app when Firebase is ready
+function startApp() {
+    if (typeof db !== 'undefined' && typeof auth !== 'undefined') {
+        initFirebase();
+        updateCartCount();
+        initSearch(); // Initialize search functionality
 
-    // User Dropdown Logic
-    const userIcon = document.querySelector('.user-icon');
-    if (userIcon) {
-        // Replace icon with dropdown trigger container
-        const container = document.createElement('div');
-        container.className = 'user-dropdown-container';
-        container.style.position = 'relative';
-        container.style.display = 'inline-block';
+        // User Dropdown Logic
+        const userIcon = document.querySelector('.user-icon');
+        if (userIcon) {
+            // Replace icon with dropdown trigger container
+            const container = document.createElement('div');
+            container.className = 'user-dropdown-container';
+            container.style.position = 'relative';
+            container.style.display = 'inline-block';
 
-        userIcon.parentNode.replaceChild(container, userIcon);
-        container.appendChild(userIcon);
+            userIcon.parentNode.replaceChild(container, userIcon);
+            container.appendChild(userIcon);
 
-        // Update Icon Appearance
-        if (state.currentUser) {
-            userIcon.innerHTML = `<i class="fas fa-user-circle" style="font-size: 1.2rem;"></i>`;
-            userIcon.title = state.currentUser.username || state.currentUser.name;
-        } else {
-            userIcon.innerHTML = `<i class="fas fa-user" style="font-size: 1.2rem;"></i>`;
-        }
-        userIcon.href = '#'; // Prevent default navigation
-
-        // Create Dropdown Menu
-        const dropdown = document.createElement('div');
-        dropdown.className = 'user-dropdown-menu';
-
-        if (state.currentUser) {
-            // Logged In Menu
-            dropdown.innerHTML = `
-                <div class="dropdown-header">
-                    <strong>${state.currentUser.username || state.currentUser.name}</strong><br>
-                    <small>${state.currentUser.email}</small>
-                </div>
-                <ul class="dropdown-list">
-                    <li><a href="#" onclick="showCartModal()"><i class="fas fa-shopping-cart"></i> See Cart List</a></li>
-                    <li><a href="orders.html"><i class="fas fa-box"></i> My Orders</a></li>
-                    <li><a href="wishlist.html"><i class="fas fa-heart"></i> My Wishlist</a></li>
-                    <li><a href="#" onclick="showNotifications()"><i class="fas fa-bell"></i> Notifications <span class="badge" id="notif-badge">${state.currentUser.notifications ? state.currentUser.notifications.length : 0}</span></a></li>
-                    <li><a href="#" onclick="showHelp()"><i class="fas fa-question-circle"></i> Help / FAQ</a></li>
-                    ${state.currentUser.isAdmin ? '<li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a></li>' : ''}
-                    <li><a href="#" onclick="switchUser()"><i class="fas fa-users"></i> Switch User</a></li>
-                    <li><a href="#" onclick="deleteAccount()" style="color: red;"><i class="fas fa-trash"></i> Delete Account</a></li>
-                    <li><a href="#" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                </ul>
-            `;
-        } else {
-            // Guest Menu
-            dropdown.innerHTML = `
-                <ul class="dropdown-list">
-                    <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> Sign In</a></li>
-                    <li><a href="login.html"><i class="fas fa-user-plus"></i> Sign Up</a></li>
-                    <li><a href="#" onclick="showHelp()"><i class="fas fa-question-circle"></i> Help / FAQ</a></li>
-                </ul>
-            `;
-        }
-
-        container.appendChild(dropdown);
-
-        // Toggle Dropdown
-        userIcon.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation(); // Prevent immediate close
-            dropdown.classList.toggle('active');
-        });
-
-        // Close when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!container.contains(e.target)) {
-                dropdown.classList.remove('active');
-            }
-        });
-
-        // Inject "Admin" link if user is admin (Legacy request, keeping it)
-        if (state.currentUser && state.currentUser.isAdmin) {
-            const navLinks = document.querySelector('.nav-links');
-            if (navLinks && !document.querySelector('.admin-link')) {
-                const adminLink = document.createElement('a');
-                adminLink.href = 'admin.html';
-                adminLink.textContent = 'Admin';
-                adminLink.className = 'admin-link';
-                adminLink.style.color = 'var(--primary-color)';
-                adminLink.style.fontWeight = '600';
-                navLinks.appendChild(adminLink);
-            }
-        }
-    }
-
-    // Auth Logic (Only if on login page)
-    if (document.getElementById('login-view')) {
-        window.handleLogin = function (e) {
-            e.preventDefault();
-            const emailInput = document.getElementById('login-email');
-            if (emailInput) {
-                const email = emailInput.value;
-                // For now, password check is skipped/mocked
-                loginUser(email, 'password');
-            }
-        };
-
-        window.handleSignup = function (e) {
-            e.preventDefault();
-            const nameInput = document.getElementById('signup-name');
-            const emailInput = document.getElementById('signup-email');
-            const passwordInput = document.getElementById('signup-password');
-            const confirmInput = document.getElementById('signup-confirm');
-
-            if (nameInput && emailInput && passwordInput && confirmInput) {
-                const name = nameInput.value;
-                const email = emailInput.value;
-                const password = passwordInput.value;
-                const confirm = confirmInput.value;
-
-                if (password !== confirm) {
-                    showNotification('Passwords do not match!', 'error');
-                    return;
-                }
-
-                if (registerUser(name, email, password)) {
-                    showNotification(`Account created successfully for ${name}! Logging you in...`, 'success');
-                    setTimeout(() => {
-                        loginUser(email, password);
-                    }, 1500);
-                }
-            }
-        };
-    }
-
-    // Mobile Menu Logic
-    const menuBtn = document.querySelector('.mobile-menu-btn');
-    const navLinks = document.querySelector('.nav-links');
-
-    if (menuBtn) {
-        menuBtn.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            const icon = menuBtn.querySelector('i');
-            if (navLinks.classList.contains('active')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
+            // Update Icon Appearance
+            if (state.currentUser) {
+                userIcon.innerHTML = `<i class="fas fa-user-circle" style="font-size: 1.2rem;"></i>`;
+                userIcon.title = state.currentUser.username || state.currentUser.name;
             } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
+                userIcon.innerHTML = `<i class="fas fa-user" style="font-size: 1.2rem;"></i>`;
             }
-        });
+            userIcon.href = '#'; // Prevent default navigation
+
+            // Create Dropdown Menu
+            const dropdown = document.createElement('div');
+            dropdown.className = 'user-dropdown-menu';
+
+            if (state.currentUser) {
+                // Logged In Menu
+                dropdown.innerHTML = `
+                    <div class="dropdown-header">
+                        <strong>${state.currentUser.username || state.currentUser.name}</strong><br>
+                        <small>${state.currentUser.email}</small>
+                    </div>
+                    <ul class="dropdown-list">
+                        <li><a href="#" onclick="showCartModal()"><i class="fas fa-shopping-cart"></i> See Cart List</a></li>
+                        <li><a href="orders.html"><i class="fas fa-box"></i> My Orders</a></li>
+                        <li><a href="wishlist.html"><i class="fas fa-heart"></i> My Wishlist</a></li>
+                        <li><a href="#" onclick="showNotifications()"><i class="fas fa-bell"></i> Notifications <span class="badge" id="notif-badge">${state.currentUser.notifications ? state.currentUser.notifications.length : 0}</span></a></li>
+                        <li><a href="#" onclick="showHelp()"><i class="fas fa-question-circle"></i> Help / FAQ</a></li>
+                        ${state.currentUser.isAdmin ? '<li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a></li>' : ''}
+                        <li><a href="#" onclick="switchUser()"><i class="fas fa-users"></i> Switch User</a></li>
+                        <li><a href="#" onclick="deleteAccount()" style="color: red;"><i class="fas fa-trash"></i> Delete Account</a></li>
+                        <li><a href="#" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                `;
+            } else {
+                // Guest Menu
+                dropdown.innerHTML = `
+                    <ul class="dropdown-list">
+                        <li><a href="login.html"><i class="fas fa-sign-in-alt"></i> Sign In</a></li>
+                        <li><a href="login.html"><i class="fas fa-user-plus"></i> Sign Up</a></li>
+                        <li><a href="#" onclick="showHelp()"><i class="fas fa-question-circle"></i> Help / FAQ</a></li>
+                    </ul>
+                `;
+            }
+
+            container.appendChild(dropdown);
+
+            // Toggle Dropdown
+            userIcon.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent immediate close
+                dropdown.classList.toggle('active');
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!container.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
+            });
+
+            // Inject "Admin" link if user is admin (Legacy request, keeping it)
+            if (state.currentUser && state.currentUser.isAdmin) {
+                const navLinks = document.querySelector('.nav-links');
+                if (navLinks && !document.querySelector('.admin-link')) {
+                    const adminLink = document.createElement('a');
+                    adminLink.href = 'admin.html';
+                    adminLink.textContent = 'Admin';
+                    adminLink.className = 'admin-link';
+                    adminLink.style.color = 'var(--primary-color)';
+                    adminLink.style.fontWeight = '600';
+                    navLinks.appendChild(adminLink);
+                }
+            }
+        }
+
+        // Auth Logic (Only if on login page)
+        if (document.getElementById('login-view')) {
+            window.handleLogin = function (e) {
+                e.preventDefault();
+                const emailInput = document.getElementById('login-email');
+                if (emailInput) {
+                    const email = emailInput.value;
+                    // For now, password check is skipped/mocked
+                    loginUser(email, 'password');
+                }
+            };
+
+            window.handleSignup = function (e) {
+                e.preventDefault();
+                const nameInput = document.getElementById('signup-name');
+                const emailInput = document.getElementById('signup-email');
+                const passwordInput = document.getElementById('signup-password');
+                const confirmInput = document.getElementById('signup-confirm');
+
+                if (nameInput && emailInput && passwordInput && confirmInput) {
+                    const name = nameInput.value;
+                    const email = emailInput.value;
+                    const password = passwordInput.value;
+                    const confirm = confirmInput.value;
+
+                    if (password !== confirm) {
+                        showNotification('Passwords do not match!', 'error');
+                        return;
+                    }
+
+                    if (registerUser(name, email, password)) {
+                        showNotification(`Account created successfully for ${name}! Logging you in...`, 'success');
+                        setTimeout(() => {
+                            loginUser(email, password);
+                        }, 1500);
+                    }
+                }
+            };
+        }
+
+        // Mobile Menu Logic
+        const menuBtn = document.querySelector('.mobile-menu-btn');
+        const navLinks = document.querySelector('.nav-links');
+
+        if (menuBtn) {
+            menuBtn.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+                const icon = menuBtn.querySelector('i');
+                if (navLinks.classList.contains('active')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+        }
+
+        // Inject Contact Info (Footer)
+        const footerEmail = document.querySelector('.footer-col li:nth-child(1)');
+        const footerPhone = document.querySelector('.footer-col li:nth-child(2)');
+        const footerWhatsapp = document.querySelector('.footer-col li:nth-child(3)');
+        const footerAddress = document.querySelector('.footer-col li:nth-child(4)');
+
+        if (footerEmail && state.contactInfo) {
+            footerEmail.innerHTML = `<i class="fas fa-envelope"></i> ${state.contactInfo.email}`;
+            footerPhone.innerHTML = `<i class="fas fa-phone"></i> ${state.contactInfo.phone}`;
+            footerWhatsapp.innerHTML = `<i class="fab fa-whatsapp"></i> ${state.contactInfo.whatsapp}`;
+            footerAddress.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${state.contactInfo.address}`;
+        }
+    } else {
+        console.error('Firebase not initialized yet.');
+    }
+}
+
+// Listen for Firebase initialization event
+document.addEventListener('firebaseInitialized', tryStartApp);
+
+// Also check on DOMContentLoaded in case event already fired
+document.addEventListener('DOMContentLoaded', tryStartApp);
+
+function tryStartApp() {
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') return;
+
+    // Wait for Firebase to be initialized
+    if (typeof db === 'undefined' || typeof auth === 'undefined') {
+        console.log('Waiting for Firebase...');
+        return;
     }
 
-    // Inject Contact Info (Footer)
-    const footerEmail = document.querySelector('.footer-col li:nth-child(1)');
-    const footerPhone = document.querySelector('.footer-col li:nth-child(2)');
-    const footerWhatsapp = document.querySelector('.footer-col li:nth-child(3)');
-    const footerAddress = document.querySelector('.footer-col li:nth-child(4)');
+    // Prevent double initialization
+    if (window.appStarted) return;
+    window.appStarted = true;
 
-    if (footerEmail && state.contactInfo) {
-        footerEmail.innerHTML = `<i class="fas fa-envelope"></i> ${state.contactInfo.email}`;
-        footerPhone.innerHTML = `<i class="fas fa-phone"></i> ${state.contactInfo.phone}`;
-        footerWhatsapp.innerHTML = `<i class="fab fa-whatsapp"></i> ${state.contactInfo.whatsapp}`;
-        footerAddress.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${state.contactInfo.address}`;
-    }
-});
+    console.log('Starting App...');
+    startApp();
+}
 
 // Global Helpers for Dropdown Actions
 window.switchUser = function () {
@@ -971,3 +1004,38 @@ function handleForgotPassword(e) {
         }
     }
 }
+
+// ==========================================
+// APP INITIALIZATION
+// ==========================================
+
+// This function handles the "Handshake" between config and app
+function handleAppStart() {
+    // 1. Check if DOM is ready
+    if (document.readyState === 'loading') return;
+
+    // 2. Check if Firebase is ready (Global variables from firebase-config.js)
+    if (typeof db === 'undefined' || typeof auth === 'undefined') {
+        console.log('⏳ Waiting for Firebase to initialize...');
+        return;
+    }
+
+    // 3. Prevent double start
+    if (window.appStarted) return;
+    window.appStarted = true;
+
+    console.log('🚀 Starting Application...');
+
+    // 4. Start the main logic
+    if (typeof startApp === 'function') {
+        startApp();
+    } else {
+        console.error('❌ Critical Error: startApp function is missing!');
+    }
+}
+
+// Listen for the signal from firebase-config.js
+document.addEventListener('firebaseInitialized', handleAppStart);
+
+// Also check when DOM is ready (in case Firebase beat the DOM)
+document.addEventListener('DOMContentLoaded', handleAppStart);
